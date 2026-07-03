@@ -23,6 +23,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const userId = session?.user?.id
+  const userEmail = session?.user?.email
+  const userMetadataUsername = session?.user?.user_metadata?.username
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -42,13 +44,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(null)
       return
     }
+
+    const fallbackUsername = String(userMetadataUsername || userEmail?.split('@')[0] || 'benchspot')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_+|_+$/g, '') || 'benchspot'
+
     supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
-      .single()
-      .then(({ data }) => setProfile(data as Profile | null))
-  }, [userId])
+      .maybeSingle()
+      .then(async ({ data, error }) => {
+        if (error) {
+          setProfile(null)
+          return
+        }
+
+        if (data) {
+          setProfile(data as Profile)
+          return
+        }
+
+        const { data: createdProfile, error: createError } = await supabase
+          .from('profiles')
+          .upsert({ id: userId, username: fallbackUsername }, { onConflict: 'id' })
+          .select()
+          .maybeSingle()
+
+        setProfile(createError ? null : createdProfile as Profile | null)
+      })
+  }, [userEmail, userId, userMetadataUsername])
 
   const value: AuthContextValue = {
     session,
@@ -102,11 +130,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           bio: patch.bio ?? null,
         }, { onConflict: 'id' })
         .select()
-        .single()
+        .maybeSingle()
 
       if (error) throw error
       await supabase.auth.updateUser({ data: { username: patch.username } })
-      setProfile(data as Profile)
+      setProfile(data as Profile | null)
     },
   }
 
