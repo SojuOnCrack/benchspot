@@ -1,0 +1,1 @@
+import{t as e}from"./query-vendor-D9x7O0PZ.js";import{n as t,r as n}from"./benches-hSWYJgig.js";function r(t,r){return e({queryKey:[`benches`,t,r],queryFn:()=>n(t,r),enabled:t!==null,staleTime:3e4,placeholderData:e=>e})}function i(n){return e({queryKey:[`bench`,n],queryFn:()=>t(n),enabled:!!n})}export{r as n,i as t};
