@@ -13,6 +13,7 @@ interface AuthContextValue {
   signInWithOAuth: (provider: 'google' | 'github') => Promise<void>
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<void>
+  updateProfile: (patch: Pick<Profile, 'username'> & Partial<Pick<Profile, 'display_name' | 'bio'>>) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -89,6 +90,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         redirectTo: `${window.location.origin}/auth/reset-password`,
       })
       if (error) throw error
+    },
+    async updateProfile(patch) {
+      if (!userId) throw new Error('Nicht angemeldet')
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({
+          username: patch.username,
+          display_name: patch.display_name ?? null,
+          bio: patch.bio ?? null,
+        })
+        .eq('id', userId)
+        .select()
+        .single()
+
+      if (error) throw error
+      setProfile(data as Profile)
     },
   }
 
