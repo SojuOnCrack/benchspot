@@ -9,6 +9,18 @@ function cleanUsername(value: string) {
   return value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_').replace(/^_+|_+$/g, '')
 }
 
+function profileErrorMessage(err: unknown) {
+  if (typeof err === 'object' && err && 'code' in err) {
+    const code = String((err as { code?: unknown }).code)
+    if (code === '23505') return 'Dieser Username ist schon vergeben.'
+    if (code === '42501') return 'Supabase blockiert das Speichern. Bitte pruefe die profiles RLS-Policies/Migrationen.'
+    if (code === 'PGRST116') return 'Profil wurde noch nicht angelegt. Bitte nochmal speichern.'
+  }
+
+  if (err instanceof Error) return err.message
+  return 'Profil konnte nicht gespeichert werden.'
+}
+
 export default function ProfilePage() {
   const { profile, signOut, user, updateProfile } = useAuth()
   const navigate = useNavigate()
@@ -52,7 +64,7 @@ export default function ProfilePage() {
       setUsername(nextUsername)
       setMessage('Profil gespeichert.')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Profil konnte nicht gespeichert werden.')
+      setError(profileErrorMessage(err))
     } finally {
       setSaving(false)
     }

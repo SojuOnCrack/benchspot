@@ -95,16 +95,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!userId) throw new Error('Nicht angemeldet')
       const { data, error } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          id: userId,
           username: patch.username,
           display_name: patch.display_name ?? null,
           bio: patch.bio ?? null,
-        })
-        .eq('id', userId)
+        }, { onConflict: 'id' })
         .select()
         .single()
 
       if (error) throw error
+      await supabase.auth.updateUser({ data: { username: patch.username } })
       setProfile(data as Profile)
     },
   }

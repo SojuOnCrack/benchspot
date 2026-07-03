@@ -14,6 +14,15 @@ create policy "profiles_admin_update" on public.profiles
         and p.role in ('admin','moderator')
         and not p.is_blocked
     )
+  )
+  with check (
+    exists (
+      select 1
+      from public.profiles p
+      where p.id = auth.uid()
+        and p.role in ('admin','moderator')
+        and not p.is_blocked
+    )
   );
 
 create or replace function public.handle_new_user()
