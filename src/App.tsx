@@ -9,6 +9,7 @@ const BenchDetailPage = lazy(() => import('@/pages/BenchDetailPage'))
 const AddBenchPage = lazy(() => import('@/pages/AddBenchPage'))
 const FavoritesPage = lazy(() => import('@/pages/FavoritesPage'))
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'))
+const AdminPage = lazy(() => import('@/pages/AdminPage'))
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'))
@@ -42,6 +43,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminPage />
               </ProtectedRoute>
             }
           />

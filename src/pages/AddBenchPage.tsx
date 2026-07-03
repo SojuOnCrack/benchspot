@@ -7,22 +7,24 @@ import {
   Waves, Mountain, Building2, Umbrella, Armchair, VolumeX, Heart, Briefcase, UtensilsCrossed,
 } from 'lucide-react'
 import { benchSchema, benchFormDefaults, type BenchFormValues } from '@/lib/schemas/benchSchema'
-import { createBench } from '@/lib/api/benches'
+import { createBench, uploadBenchPhotos } from '@/lib/api/benches'
 import { useAuth } from '@/hooks/useAuth'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import LocationPicker from '@/components/bench/LocationPicker'
 import PhotoUploader from '@/components/bench/PhotoUploader'
 import ToggleField from '@/components/ui/ToggleField'
 
+const FIELD_CLASS = 'mt-1 w-full rounded-xl border border-forest-100 bg-white px-3.5 py-2.5 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-forest-400 dark:border-white/10 dark:bg-stone-900 dark:text-stone-100 dark:placeholder:text-stone-500'
+
 const FEATURE_TOGGLES: Array<{ key: keyof BenchFormValues; icon: typeof Accessibility; label: string }> = [
-  { key: 'has_roof', icon: Umbrella, label: 'Überdacht' },
+  { key: 'has_roof', icon: Umbrella, label: 'Ueberdacht' },
   { key: 'has_backrest', icon: Armchair, label: 'Mit Lehne' },
   { key: 'has_table', icon: Table2, label: 'Mit Tisch' },
   { key: 'wheelchair_accessible', icon: Accessibility, label: 'Rollstuhlgerecht' },
   { key: 'stroller_friendly', icon: Baby, label: 'Kinderwagen geeignet' },
-  { key: 'has_bike_rack', icon: Bike, label: 'Fahrradständer' },
+  { key: 'has_bike_rack', icon: Bike, label: 'Fahrradstaender' },
   { key: 'has_water_fountain', icon: Droplets, label: 'Trinkbrunnen' },
-  { key: 'has_trash_bin', icon: Trash2, label: 'Mülleimer' },
+  { key: 'has_trash_bin', icon: Trash2, label: 'Muelleimer' },
   { key: 'has_bbq', icon: Flame, label: 'Grillplatz' },
   { key: 'has_playground', icon: Baby, label: 'Spielplatz' },
   { key: 'dog_friendly', icon: Dog, label: 'Hunde erlaubt' },
@@ -64,11 +66,16 @@ export default function AddBenchPage() {
     setError(null)
     try {
       const bench = await createBench(
-        { ...values, description: values.description ?? null, notes: values.notes ?? null, seats: values.seats ?? null, material: values.material ?? null },
+        {
+          ...values,
+          description: values.description ?? null,
+          notes: values.notes ?? null,
+          seats: values.seats ?? null,
+          material: values.material ?? null,
+        },
         user.id
       )
-      // TODO: photos-Array nach Erstellung in Supabase Storage hochladen und
-      // an public.photos mit bench_id = bench.id anhängen (Storage-Bucket: bench-photos)
+      await uploadBenchPhotos(bench.id, user.id, photos)
       navigate(`/bank/${bench.id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Speichern fehlgeschlagen')
@@ -78,9 +85,9 @@ export default function AddBenchPage() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="h-full overflow-y-auto px-5 pb-28 pt-5">
-      <h1 className="text-lg font-semibold text-stone-800 dark:text-stone-100">Neue Parkbank</h1>
-      <p className="mt-1 text-sm text-stone-500">Position, Details und Fotos hinzufügen.</p>
+    <form onSubmit={handleSubmit(onSubmit)} className="h-full overflow-y-auto px-5 pb-28 pt-5 text-stone-800 dark:text-stone-100">
+      <h1 className="text-lg font-semibold">Neue Parkbank</h1>
+      <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">Position, Details und Fotos hinzufuegen.</p>
 
       <section className="mt-5 space-y-2">
         <label className="text-sm font-medium text-stone-700 dark:text-stone-200">Position</label>
@@ -91,42 +98,28 @@ export default function AddBenchPage() {
         <button
           type="button"
           onClick={() => geo.lat && geo.lng && (setValue('lat', geo.lat), setValue('lng', geo.lng))}
-          className="text-xs font-medium text-forest-600"
+          className="text-xs font-medium text-forest-700 dark:text-forest-300"
         >
-          Aktuellen Standort übernehmen
+          Aktuellen Standort uebernehmen
         </button>
       </section>
 
       <section className="mt-6 space-y-3">
         <div>
           <label htmlFor="title" className="text-sm font-medium text-stone-700 dark:text-stone-200">Titel</label>
-          <input
-            id="title"
-            {...register('title')}
-            className="mt-1 w-full rounded-xl border border-forest-100 px-3.5 py-2.5 text-sm outline-none focus:border-forest-400 dark:border-white/10 dark:bg-white/5"
-            placeholder="z. B. Bank mit Seeblick"
-          />
+          <input id="title" {...register('title')} className={FIELD_CLASS} placeholder="z. B. Bank mit Seeblick" />
           {formState.errors.title && <p className="mt-1 text-xs text-red-500">{formState.errors.title.message}</p>}
         </div>
 
         <div>
           <label htmlFor="description" className="text-sm font-medium text-stone-700 dark:text-stone-200">Beschreibung</label>
-          <textarea
-            id="description"
-            {...register('description')}
-            rows={3}
-            className="mt-1 w-full rounded-xl border border-forest-100 px-3.5 py-2.5 text-sm outline-none focus:border-forest-400 dark:border-white/10 dark:bg-white/5"
-          />
+          <textarea id="description" {...register('description')} rows={3} className={FIELD_CLASS} />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label htmlFor="category" className="text-sm font-medium text-stone-700 dark:text-stone-200">Kategorie</label>
-            <select
-              id="category"
-              {...register('category')}
-              className="mt-1 w-full rounded-xl border border-forest-100 px-3.5 py-2.5 text-sm outline-none focus:border-forest-400 dark:border-white/10 dark:bg-white/5"
-            >
+            <select id="category" {...register('category')} className={FIELD_CLASS}>
               <option value="standard">Standard</option>
               <option value="panorama">Panorama</option>
               <option value="waterfront">Am Wasser</option>
@@ -136,15 +129,8 @@ export default function AddBenchPage() {
             </select>
           </div>
           <div>
-            <label htmlFor="seats" className="text-sm font-medium text-stone-700 dark:text-stone-200">Sitzplätze</label>
-            <input
-              id="seats"
-              type="number"
-              min={1}
-              max={20}
-              {...register('seats', { valueAsNumber: true })}
-              className="mt-1 w-full rounded-xl border border-forest-100 px-3.5 py-2.5 text-sm outline-none focus:border-forest-400 dark:border-white/10 dark:bg-white/5"
-            />
+            <label htmlFor="seats" className="text-sm font-medium text-stone-700 dark:text-stone-200">Sitzplaetze</label>
+            <input id="seats" type="number" min={1} max={20} {...register('seats', { valueAsNumber: true })} className={FIELD_CLASS} />
           </div>
         </div>
       </section>
@@ -174,12 +160,7 @@ export default function AddBenchPage() {
 
       <section className="mt-6">
         <label htmlFor="notes" className="text-sm font-medium text-stone-700 dark:text-stone-200">Notizen</label>
-        <textarea
-          id="notes"
-          {...register('notes')}
-          rows={2}
-          className="mt-1 w-full rounded-xl border border-forest-100 px-3.5 py-2.5 text-sm outline-none focus:border-forest-400 dark:border-white/10 dark:bg-white/5"
-        />
+        <textarea id="notes" {...register('notes')} rows={2} className={FIELD_CLASS} />
       </section>
 
       {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
@@ -189,7 +170,7 @@ export default function AddBenchPage() {
         disabled={submitting}
         className="fixed inset-x-5 bottom-24 rounded-2xl bg-forest-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-forest-600/25 transition hover:bg-forest-700 disabled:opacity-60 sm:static sm:mt-6"
       >
-        {submitting ? 'Speichere…' : 'Parkbank speichern'}
+        {submitting ? 'Speichere...' : 'Parkbank speichern'}
       </button>
     </form>
   )

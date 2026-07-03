@@ -21,6 +21,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
+  const userId = session?.user?.id
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -36,17 +37,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (!session?.user) {
+    if (!userId) {
       setProfile(null)
       return
     }
     supabase
       .from('profiles')
       .select('*')
-      .eq('id', session.user.id)
+      .eq('id', userId)
       .single()
       .then(({ data }) => setProfile(data as Profile | null))
-  }, [session?.user?.id])
+  }, [userId])
 
   const value: AuthContextValue = {
     session,
@@ -58,10 +59,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error
     },
     async signUp(email, password, username) {
-      const { data, error } = await supabase.auth.signUp({ email, password })
+      const cleanUsername = username.trim()
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { username: cleanUsername } },
+      })
       if (error) throw error
-      if (data.user) {
-        await supabase.from('profiles').insert({ id: data.user.id, username })
+      if (data.user && data.session) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({ id: data.user.id, username: cleanUsername }, { onConflict: 'id' })
+        if (profileError) throw profileError
       }
     },
     async signInWithOAuth(provider) {

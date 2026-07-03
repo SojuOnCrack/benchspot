@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import type { Bench, BenchFilters, MapBounds } from '@/types/database'
+import type { Bench, BenchFilters, MapBounds, Photo, Rating, Comment, Report, Profile } from '@/types/database'
 
 export async function fetchBenchesInBounds(bounds: MapBounds, filters: BenchFilters = {}) {
   const { data, error } = await supabase.rpc('benches_in_bbox', {
@@ -16,6 +16,7 @@ export async function fetchBenchesInBounds(bounds: MapBounds, filters: BenchFilt
     only_with_photos: filters.onlyWithPhotos ?? false,
     only_rated: filters.onlyRated ?? false,
     min_rating: filters.minRating ?? 0,
+    search_text: filters.searchText?.trim() || '',
   })
 
   if (error) throw error
@@ -87,4 +88,129 @@ export async function toggleFavorite(userId: string, benchId: string, isFavorite
     const { error } = await supabase.from('favorites').insert({ user_id: userId, bench_id: benchId })
     if (error) throw error
   }
+}
+
+export async function uploadBenchPhotos(benchId: string, userId: string, files: File[]) {
+  if (files.length === 0) return []
+
+  const rows: Array<Pick<Photo, 'bench_id' | 'uploader_id' | 'storage_path' | 'sort_order'>> = []
+
+  for (const [index, file] of files.entries()) {
+    const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+    const path = `${benchId}/${crypto.randomUUID()}.${extension}`
+    const { error } = await supabase.storage.from('bench-photos').upload(path, file, {
+      contentType: file.type || 'image/jpeg',
+      upsert: false,
+    })
+    if (error) throw error
+    rows.push({ bench_id: benchId, uploader_id: userId, storage_path: path, sort_order: index })
+  }
+
+  const { data, error } = await supabase.from('photos').insert(rows).select()
+  if (error) throw error
+  return data as Photo[]
+}
+
+export async function fetchBenchPhotos(benchId: string) {
+  const { data, error } = await supabase
+    .from('photos')
+    .select('*')
+    .eq('bench_id', benchId)
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+
+  return (data as Photo[]).map((photo) => ({
+    ...photo,
+    public_url: supabase.storage.from('bench-photos').getPublicUrl(photo.storage_path).data.publicUrl,
+  }))
+}
+
+export async function fetchBenchRatings(benchId: string) {
+  const { data, error } = await supabase
+    .from('ratings')
+    .select('*')
+    .eq('bench_id', benchId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data as Rating[]
+}
+
+export async function upsertBenchRating(benchId: string, userId: string, stars: number) {
+  const { data, error } = await supabase
+    .from('ratings')
+    .upsert({ bench_id: benchId, user_id: userId, stars }, { onConflict: 'bench_id,user_id' })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data as Rating
+}
+
+export async function fetchBenchComments(benchId: string) {
+  const { data, error } = await supabase
+    .from('comments')
+    .select('*, profiles:user_id(username, display_name, avatar_url)')
+    .eq('bench_id', benchId)
+    .is('parent_id', null)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data as Comment[]
+}
+
+export async function addBenchComment(benchId: string, userId: string, body: string) {
+  const { data, error } = await supabase
+    .from('comments')
+    .insert({ bench_id: benchId, user_id: userId, body })
+    .select('*, profiles:user_id(username, display_name, avatar_url)')
+    .single()
+
+  if (error) throw error
+  return data as Comment
+}
+
+export async function fetchOpenReports() {
+  const { data, error } = await supabase
+    .from('reports')
+    .select('*, profiles:reporter_id(username, display_name, avatar_url)')
+    .in('status', ['open', 'reviewing'])
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data as Report[]
+}
+
+export async function updateReportStatus(id: string, status: Report['status']) {
+  const { data, error } = await supabase
+    .from('reports')
+    .update({ status, resolved_at: status === 'resolved' || status === 'dismissed' ? new Date().toISOString() : null })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data as Report
+}
+
+export async function fetchProfilesForAdmin(search = '') {
+  let query = supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(25)
+  if (search.trim()) query = query.ilike('username', `%${search.trim()}%`)
+  const { data, error } = await query
+  if (error) throw error
+  return data as Array<Profile & { is_blocked?: boolean }>
+}
+
+export async function setProfileBlocked(id: string, isBlocked: boolean) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ is_blocked: isBlocked })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data as Profile & { is_blocked?: boolean }
 }

@@ -21,6 +21,7 @@ export interface Profile {
   bench_count: number
   rating_count: number
   role: UserRole
+  is_blocked?: boolean
   created_at: string
   updated_at: string
 }
@@ -72,6 +73,7 @@ export interface Photo {
   bench_id: string
   uploader_id: string | null
   storage_path: string
+  public_url?: string
   width: number | null
   height: number | null
   sort_order: number
@@ -103,6 +105,20 @@ export interface Comment {
   edited: boolean
   created_at: string
   updated_at: string
+  profiles?: Pick<Profile, 'username' | 'display_name' | 'avatar_url'> | null
+}
+
+export interface Report {
+  id: string
+  reporter_id: string | null
+  target_type: 'bench' | 'photo' | 'comment' | 'user'
+  target_id: string
+  reason: 'spam' | 'inappropriate' | 'duplicate' | 'offensive' | 'fake' | 'other'
+  details: string | null
+  status: 'open' | 'reviewing' | 'resolved' | 'dismissed'
+  created_at: string
+  resolved_at: string | null
+  profiles?: Pick<Profile, 'username' | 'display_name' | 'avatar_url'> | null
 }
 
 export interface BenchFilters {
@@ -115,6 +131,7 @@ export interface BenchFilters {
   onlyWithPhotos?: boolean
   onlyRated?: boolean
   minRating?: number
+  searchText?: string
 }
 
 export interface MapBounds {

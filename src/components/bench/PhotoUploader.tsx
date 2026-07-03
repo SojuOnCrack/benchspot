@@ -71,7 +71,7 @@ export default function PhotoUploader({ files, onChange, max = 8 }: PhotoUploade
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={busy}
-            className="flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-forest-200 text-forest-500 transition hover:border-forest-400 disabled:opacity-50"
+            className="flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-forest-200 bg-white text-forest-700 transition hover:border-forest-400 disabled:opacity-50 dark:border-white/10 dark:bg-stone-900 dark:text-forest-200"
           >
             <ImagePlus size={20} />
             <span className="text-[11px]">{busy ? 'Komprimiere…' : 'Hinzufügen'}</span>
