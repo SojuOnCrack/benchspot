@@ -1,7 +1,0 @@
-import{a as e}from"./rolldown-runtime-CNC7AqOf.js";import{c as t,u as n}from"./map-vendor-Oij3ooG9.js";var r=e(n(),1);function i(e=!1){let[t,n]=(0,r.useState)({lat:null,lng:null,accuracy:null,error:null,loading:!0});return(0,r.useEffect)(()=>{if(!(`geolocation`in navigator)){n(e=>({...e,error:`Geolocation wird nicht unterstützt`,loading:!1}));return}let t=e=>{n({lat:e.coords.latitude,lng:e.coords.longitude,accuracy:e.coords.accuracy,error:null,loading:!1})},r=e=>{n(t=>({...t,error:e.message,loading:!1}))},i={enableHighAccuracy:!0,timeout:1e4,maximumAge:6e4};if(e){let e=navigator.geolocation.watchPosition(t,r,i);return()=>navigator.geolocation.clearWatch(e)}navigator.geolocation.getCurrentPosition(t,r,i)},[e]),t}var a=e(t(),1),o=a.default.divIcon({className:`benchspot-marker`,html:`
-    <div class="benchspot-marker__pin">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M3 11h18v2H3v-2Zm1-4h2v11H4V7Zm14 0h2v11h-2V7ZM3 15h18v2H3v-2Z" fill="currentColor"/>
-      </svg>
-    </div>
-  `,iconSize:[32,32],iconAnchor:[16,30],popupAnchor:[0,-28]}),s=a.default.divIcon({className:`benchspot-user-marker`,html:`<div class="benchspot-user-marker__dot"><div class="benchspot-user-marker__pulse"></div></div>`,iconSize:[20,20],iconAnchor:[10,10]});export{s as n,i as r,o as t};

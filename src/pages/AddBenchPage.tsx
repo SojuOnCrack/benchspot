@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -60,6 +60,12 @@ export default function AddBenchPage() {
   const lat = watch('lat')
   const lng = watch('lng')
 
+  useEffect(() => {
+    if (!geo.lat || !geo.lng) return
+    setValue('lat', geo.lat)
+    setValue('lng', geo.lng)
+  }, [geo.lat, geo.lng, setValue])
+
   const onSubmit = async (values: BenchFormValues) => {
     if (!user) return
     setSubmitting(true)
@@ -97,11 +103,19 @@ export default function AddBenchPage() {
         }} />
         <button
           type="button"
-          onClick={() => geo.lat && geo.lng && (setValue('lat', geo.lat), setValue('lng', geo.lng))}
+          onClick={() => {
+            if (geo.lat && geo.lng) {
+              setValue('lat', geo.lat)
+              setValue('lng', geo.lng)
+              return
+            }
+            geo.requestLocation()
+          }}
           className="text-xs font-medium text-forest-700 dark:text-forest-300"
         >
-          Aktuellen Standort uebernehmen
+          {geo.loading ? 'Standort wird gesucht...' : 'Aktuellen Standort uebernehmen'}
         </button>
+        {geo.error && <p className="text-xs text-red-500">{geo.error}</p>}
       </section>
 
       <section className="mt-6 space-y-3">
