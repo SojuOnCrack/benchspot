@@ -1,0 +1,105 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-forest-50: #f2f7f2;
+  --color-forest-100: #dfeadf;
+  --color-forest-200: #bdd5bd;
+  --color-forest-400: #6ba86b;
+  --color-forest-500: #4a8a4a;
+  --color-forest-600: #3a6f3a;
+  --color-forest-700: #2f592f;
+  --color-forest-900: #1c351c;
+
+  --color-sand-50: #faf8f4;
+  --color-sand-100: #f2ede2;
+
+  --color-ink-900: #24261f;
+
+  --font-display: 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+
+  --radius-card: 1.25rem;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-body);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+/* --- Leaflet marker theming (divIcon, kein PNG) --- */
+.benchspot-marker__pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px 999px 999px 4px;
+  transform: rotate(45deg);
+  background: var(--color-forest-600);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  border: 2px solid white;
+  color: white;
+}
+.benchspot-marker__pin svg {
+  transform: rotate(-45deg);
+}
+
+.benchspot-user-marker__dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #2563eb;
+  border: 3px solid white;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.4);
+  position: relative;
+}
+.benchspot-user-marker__pulse {
+  position: absolute;
+  inset: -8px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.25);
+  animation: benchspot-pulse 2s ease-out infinite;
+}
+@keyframes benchspot-pulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .benchspot-user-marker__pulse {
+    animation: none;
+  }
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Leaflet Cluster Icon Theming */
+.marker-cluster-small,
+.marker-cluster-medium,
+.marker-cluster-large {
+  background-color: color-mix(in srgb, var(--color-forest-500) 25%, transparent);
+}
+.marker-cluster-small div,
+.marker-cluster-medium div,
+.marker-cluster-large div {
+  background-color: var(--color-forest-600);
+  color: white;
+  font-weight: 600;
+}
