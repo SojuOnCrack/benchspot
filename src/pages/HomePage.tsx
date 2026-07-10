@@ -9,7 +9,7 @@ import type { BenchFilters } from '@/types/database'
 export default function HomePage() {
   const [filters, setFilters] = useState<BenchFilters>({})
   const [searchParams] = useSearchParams()
-  const geo = useGeolocation()
+  const geo = useGeolocation(false, true)
   const navigate = useNavigate()
 
   const userLocation = geo.lat && geo.lng ? { lat: geo.lat, lng: geo.lng } : null

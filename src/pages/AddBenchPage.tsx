@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Accessibility, Baby, Dog, TreeDeciduous, Sun, Table2, Droplets, Trash2, Flame, Bike,
   Waves, Mountain, Building2, Umbrella, Armchair, VolumeX, Heart, Briefcase, UtensilsCrossed,
+  LocateFixed, MapPin,
 } from 'lucide-react'
 import { benchSchema, benchFormDefaults, type BenchFormValues } from '@/lib/schemas/benchSchema'
 import { createBench, uploadBenchPhotos } from '@/lib/api/benches'
@@ -43,10 +44,11 @@ const FEATURE_TOGGLES: Array<{ key: keyof BenchFormValues; icon: typeof Accessib
 export default function AddBenchPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const geo = useGeolocation()
+  const geo = useGeolocation(false, true)
   const [photos, setPhotos] = useState<File[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [positionSource, setPositionSource] = useState<'pending' | 'geo' | 'manual'>('pending')
 
   const { register, handleSubmit, control, watch, setValue, formState } = useForm<BenchFormValues>({
     resolver: zodResolver(benchSchema),
@@ -62,9 +64,27 @@ export default function AddBenchPage() {
 
   useEffect(() => {
     if (!geo.lat || !geo.lng) return
+    if (positionSource === 'manual') return
     setValue('lat', geo.lat)
     setValue('lng', geo.lng)
-  }, [geo.lat, geo.lng, setValue])
+    setPositionSource('geo')
+  }, [geo.lat, geo.lng, positionSource, setValue])
+
+  const useCurrentLocation = () => {
+    if (geo.lat && geo.lng) {
+      setValue('lat', geo.lat)
+      setValue('lng', geo.lng)
+      setPositionSource('geo')
+      return
+    }
+    geo.requestLocation()
+  }
+
+  const useManualFallback = () => {
+    setValue('lat', 51.1657)
+    setValue('lng', 10.4515)
+    setPositionSource('manual')
+  }
 
   const onSubmit = async (values: BenchFormValues) => {
     if (!user) return
@@ -97,24 +117,48 @@ export default function AddBenchPage() {
 
       <section className="mt-5 space-y-2">
         <label className="text-sm font-medium text-stone-700 dark:text-stone-200">Position</label>
-        <LocationPicker lat={lat} lng={lng} onChange={(la, ln) => {
-          setValue('lat', la)
-          setValue('lng', ln)
-        }} />
-        <button
-          type="button"
-          onClick={() => {
-            if (geo.lat && geo.lng) {
-              setValue('lat', geo.lat)
-              setValue('lng', geo.lng)
-              return
-            }
-            geo.requestLocation()
-          }}
-          className="text-xs font-medium text-forest-700 dark:text-forest-300"
-        >
-          {geo.loading ? 'Standort wird gesucht...' : 'Aktuellen Standort uebernehmen'}
-        </button>
+        {positionSource === 'pending' ? (
+          <div className="rounded-2xl border border-forest-100 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/5">
+            <p className="text-sm text-stone-700 dark:text-stone-200">
+              Nutze deinen aktuellen Standort, damit die Bank direkt richtig gesetzt wird.
+            </p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={useCurrentLocation}
+                disabled={geo.loading}
+                className="flex items-center justify-center gap-2 rounded-xl bg-forest-600 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-forest-700 disabled:opacity-60"
+              >
+                <LocateFixed size={16} />
+                {geo.loading ? 'Suche Standort...' : 'Standort erlauben'}
+              </button>
+              <button
+                type="button"
+                onClick={useManualFallback}
+                className="flex items-center justify-center gap-2 rounded-xl border border-forest-100 px-3 py-2.5 text-sm font-medium text-stone-700 transition hover:bg-forest-50 dark:border-white/10 dark:text-stone-200 dark:hover:bg-white/10"
+              >
+                <MapPin size={16} />
+                Manuell setzen
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <LocationPicker lat={lat} lng={lng} onChange={(la, ln) => {
+              setValue('lat', la)
+              setValue('lng', ln)
+              setPositionSource('manual')
+            }} />
+            <button
+              type="button"
+              onClick={useCurrentLocation}
+              disabled={geo.loading}
+              className="text-xs font-medium text-forest-700 disabled:opacity-60 dark:text-forest-300"
+            >
+              {geo.loading ? 'Standort wird gesucht...' : 'Aktuellen Standort uebernehmen'}
+            </button>
+          </>
+        )}
         {geo.error && <p className="text-xs text-red-500">{geo.error}</p>}
       </section>
 
@@ -181,7 +225,7 @@ export default function AddBenchPage() {
 
       <button
         type="submit"
-        disabled={submitting}
+        disabled={submitting || positionSource === 'pending'}
         className="fixed inset-x-5 bottom-24 rounded-2xl bg-forest-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-forest-600/25 transition hover:bg-forest-700 disabled:opacity-60 sm:static sm:mt-6"
       >
         {submitting ? 'Speichere...' : 'Parkbank speichern'}

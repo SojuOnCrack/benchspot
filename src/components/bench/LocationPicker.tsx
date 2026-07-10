@@ -1,5 +1,5 @@
-import { useCallback } from 'react'
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
+import { useCallback, useEffect } from 'react'
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet'
 import type { DragEndEvent } from 'leaflet'
 import { benchMarkerIcon } from '@/components/map/benchIcons'
 
@@ -18,6 +18,16 @@ function ClickHandler({ onChange }: { onChange: (lat: number, lng: number) => vo
   return null
 }
 
+function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
+  const map = useMap()
+
+  useEffect(() => {
+    map.setView([lat, lng], map.getZoom(), { animate: true })
+  }, [lat, lng, map])
+
+  return null
+}
+
 export default function LocationPicker({ lat, lng, onChange }: LocationPickerProps) {
   const handleDragEnd = useCallback(
     (e: DragEndEvent) => {
@@ -33,6 +43,7 @@ export default function LocationPicker({ lat, lng, onChange }: LocationPickerPro
       <MapContainer center={[lat, lng]} zoom={16} className="h-full w-full" scrollWheelZoom={false}>
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <ClickHandler onChange={onChange} />
+        <RecenterMap lat={lat} lng={lng} />
         <Marker
           position={[lat, lng]}
           icon={benchMarkerIcon}
