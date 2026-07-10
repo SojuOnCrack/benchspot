@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { TreePine, Search, Moon, Sun } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
 import { useAuth } from '@/hooks/useAuthContext'
+import { useDebounce } from '@/hooks/useDebounce'
 
 export default function TopHeader() {
   const { theme, toggle } = useTheme()
@@ -11,10 +12,22 @@ export default function TopHeader() {
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const [query, setQuery] = useState(searchParams.get('q') ?? '')
+  const debouncedQuery = useDebounce(query, 450)
 
   useEffect(() => {
     setQuery(searchParams.get('q') ?? '')
   }, [searchParams])
+
+  useEffect(() => {
+    const nextQuery = debouncedQuery.trim()
+    const currentQuery = searchParams.get('q') ?? ''
+    if (nextQuery === currentQuery) return
+    if (!nextQuery && !currentQuery && location.pathname === '/') return
+
+    const params = new URLSearchParams()
+    if (nextQuery) params.set('q', nextQuery)
+    navigate({ pathname: '/', search: params.toString() }, { replace: location.pathname === '/' })
+  }, [debouncedQuery, location.pathname, navigate, searchParams])
 
   const submitSearch = (event: FormEvent) => {
     event.preventDefault()

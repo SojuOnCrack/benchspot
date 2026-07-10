@@ -10,9 +10,36 @@ interface NominatimResult {
   lon: string
 }
 
+const KNOWN_PLACES: Record<string, PlaceResult> = {
+  berlin: { label: 'Berlin, Deutschland', lat: 52.517, lng: 13.3889 },
+  hamburg: { label: 'Hamburg, Deutschland', lat: 53.5503, lng: 10.0007 },
+  muenchen: { label: 'Muenchen, Deutschland', lat: 48.1371, lng: 11.5754 },
+  munchen: { label: 'Muenchen, Deutschland', lat: 48.1371, lng: 11.5754 },
+  koeln: { label: 'Koeln, Deutschland', lat: 50.9375, lng: 6.9603 },
+  koln: { label: 'Koeln, Deutschland', lat: 50.9375, lng: 6.9603 },
+  frankfurt: { label: 'Frankfurt am Main, Deutschland', lat: 50.1109, lng: 8.6821 },
+  stuttgart: { label: 'Stuttgart, Deutschland', lat: 48.7784, lng: 9.1800 },
+  duesseldorf: { label: 'Duesseldorf, Deutschland', lat: 51.2254, lng: 6.7763 },
+  dusseldorf: { label: 'Duesseldorf, Deutschland', lat: 51.2254, lng: 6.7763 },
+  dortmund: { label: 'Dortmund, Deutschland', lat: 51.5136, lng: 7.4653 },
+  essen: { label: 'Essen, Deutschland', lat: 51.4556, lng: 7.0116 },
+  leipzig: { label: 'Leipzig, Deutschland', lat: 51.3402, lng: 12.3731 },
+  bremen: { label: 'Bremen, Deutschland', lat: 53.0758, lng: 8.8072 },
+  dresden: { label: 'Dresden, Deutschland', lat: 51.0504, lng: 13.7373 },
+  hannover: { label: 'Hannover, Deutschland', lat: 52.3759, lng: 9.7320 },
+  nuernberg: { label: 'Nuernberg, Deutschland', lat: 49.4521, lng: 11.0767 },
+  nurnberg: { label: 'Nuernberg, Deutschland', lat: 49.4521, lng: 11.0767 },
+}
+
+function normalizePlaceQuery(value: string) {
+  return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+}
+
 export async function geocodePlace(query: string): Promise<PlaceResult | null> {
   const search = query.trim()
   if (!search) return null
+  const knownPlace = KNOWN_PLACES[normalizePlaceQuery(search)]
+  if (knownPlace) return knownPlace
 
   const params = new URLSearchParams({
     q: search,
