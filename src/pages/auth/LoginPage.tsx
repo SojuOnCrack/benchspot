@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/hooks/useAuthContext'
 import AuthCard from '@/components/auth/AuthCard'
 
 export default function LoginPage() {

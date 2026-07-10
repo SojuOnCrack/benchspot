@@ -5,6 +5,8 @@
 alter table public.profiles
   add column if not exists is_blocked boolean not null default false;
 
+drop policy if exists "profiles_admin_update" on public.profiles;
+
 create policy "profiles_admin_update" on public.profiles
   for update using (
     exists (

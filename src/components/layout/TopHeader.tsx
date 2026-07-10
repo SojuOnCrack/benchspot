@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { TreePine, Search, Moon, Sun } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/hooks/useAuthContext'
 
 export default function TopHeader() {
   const { theme, toggle } = useTheme()

@@ -1,22 +1,8 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import type { Session, User } from '@supabase/supabase-js'
+import { useEffect, useState, type ReactNode } from 'react'
+import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import type { Profile } from '@/types/database'
-
-interface AuthContextValue {
-  session: Session | null
-  user: User | null
-  profile: Profile | null
-  loading: boolean
-  signInWithPassword: (email: string, password: string) => Promise<void>
-  signUp: (email: string, password: string, username: string) => Promise<void>
-  signInWithOAuth: (provider: 'google' | 'github') => Promise<void>
-  signOut: () => Promise<void>
-  resetPassword: (email: string) => Promise<void>
-  updateProfile: (patch: Pick<Profile, 'username'> & Partial<Pick<Profile, 'display_name' | 'bio'>>) => Promise<void>
-}
-
-const AuthContext = createContext<AuthContextValue | undefined>(undefined)
+import { AuthContext, type AuthContextValue } from '@/hooks/AuthContext'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
@@ -119,6 +105,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
       if (error) throw error
     },
+    async updatePassword(password) {
+      const { error } = await supabase.auth.updateUser({ password })
+      if (error) throw error
+    },
     async updateProfile(patch) {
       if (!userId) throw new Error('Nicht angemeldet')
       const { data, error } = await supabase
@@ -139,10 +129,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
-
-export function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth muss innerhalb von AuthProvider verwendet werden')
-  return ctx
 }

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { Heart, Star } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/hooks/useAuthContext'
 import { fetchFavoriteBenchIds } from '@/lib/api/benches'
 import { supabase } from '@/lib/supabase'
 import EmptyState from '@/components/ui/EmptyState'

@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { LogOut, TreeDeciduous, Star, Award, Save } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/hooks/useAuthContext'
 import { useNavigate } from 'react-router-dom'
 
 const FIELD_CLASS = 'mt-1 w-full rounded-xl border border-forest-100 bg-white px-3.5 py-2.5 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-forest-400 dark:border-white/10 dark:bg-stone-900 dark:text-stone-100 dark:placeholder:text-stone-500'

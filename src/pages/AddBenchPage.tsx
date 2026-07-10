@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { benchSchema, benchFormDefaults, type BenchFormValues } from '@/lib/schemas/benchSchema'
 import { createBench, uploadBenchPhotos } from '@/lib/api/benches'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/hooks/useAuthContext'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import LocationPicker from '@/components/bench/LocationPicker'
 import PhotoUploader from '@/components/bench/PhotoUploader'

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ShieldAlert, Ban, CheckCircle2, Search } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/hooks/useAuthContext'
 import { useAdminProfiles, useOpenReports } from '@/hooks/useBenches'
 import { setProfileBlocked, updateReportStatus } from '@/lib/api/benches'
 import PageSkeleton from '@/components/ui/PageSkeleton'

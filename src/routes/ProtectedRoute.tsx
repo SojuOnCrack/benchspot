@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/hooks/useAuthContext'
 import PageSkeleton from '@/components/ui/PageSkeleton'
 
 export default function ProtectedRoute({ children }: { children: ReactNode }) {

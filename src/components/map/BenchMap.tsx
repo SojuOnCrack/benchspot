@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet'
 import MarkerClusterGroup from 'react-leaflet-cluster'
 import L from 'leaflet'
@@ -17,17 +17,26 @@ interface BenchMapProps {
 }
 
 function ViewportTracker({ onBoundsChange }: { onBoundsChange: (b: MapBounds) => void }) {
-  useMapEvents({
+  const reportBounds = useCallback((map: L.Map) => {
+    const b = map.getBounds()
+    onBoundsChange({
+      minLat: b.getSouth(),
+      minLng: b.getWest(),
+      maxLat: b.getNorth(),
+      maxLng: b.getEast(),
+    })
+  }, [onBoundsChange])
+
+  const map = useMapEvents({
     moveend(e) {
-      const b = e.target.getBounds()
-      onBoundsChange({
-        minLat: b.getSouth(),
-        minLng: b.getWest(),
-        maxLat: b.getNorth(),
-        maxLng: b.getEast(),
-      })
+      reportBounds(e.target)
     },
   })
+
+  useEffect(() => {
+    reportBounds(map)
+  }, [map, reportBounds])
+
   return null
 }
 
