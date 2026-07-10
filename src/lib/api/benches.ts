@@ -23,6 +23,29 @@ export async function fetchBenchesInBounds(bounds: MapBounds, filters: BenchFilt
   return data as Bench[]
 }
 
+export async function searchBenches(searchText: string, limit = 50) {
+  const query = searchText.trim()
+  if (!query) return []
+
+  const { data, error } = await supabase.rpc('search_benches', {
+    search_text: query,
+    result_limit: limit,
+  })
+
+  if (!error) return data as Bench[]
+
+  const like = `%${query.replaceAll('%', '\\%').replaceAll('_', '\\_').replaceAll(',', ' ')}%`
+  const fallback = await supabase
+    .from('benches')
+    .select('*')
+    .eq('status', 'published')
+    .or(`title.ilike.${like},description.ilike.${like},notes.ilike.${like},category.ilike.${like}`)
+    .limit(limit)
+
+  if (fallback.error) throw fallback.error
+  return fallback.data as Bench[]
+}
+
 export async function fetchBenchById(id: string) {
   const { data, error } = await supabase.from('benches').select('*').eq('id', id).single()
   if (error) throw error

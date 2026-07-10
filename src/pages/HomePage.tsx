@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { LocateFixed } from 'lucide-react'
 import BenchMap from '@/components/map/BenchMap'
 import FilterBar from '@/components/bench/FilterBar'
 import { useGeolocation } from '@/hooks/useGeolocation'
+import { useBenchSearch } from '@/hooks/useBenches'
+import { geocodePlace } from '@/lib/api/geocoding'
 import type { BenchFilters } from '@/types/database'
 
 export default function HomePage() {
@@ -13,14 +16,32 @@ export default function HomePage() {
   const navigate = useNavigate()
 
   const userLocation = geo.lat && geo.lng ? { lat: geo.lat, lng: geo.lng } : null
-  const searchText = searchParams.get('q') ?? ''
-  const activeFilters = searchText ? { ...filters, searchText } : filters
+  const searchText = (searchParams.get('q') ?? '').trim()
+  const { data: searchBenches = [], isFetching: isSearchingBenches } = useBenchSearch(searchText)
+  const { data: searchPlace, isFetching: isSearchingPlace } = useQuery({
+    queryKey: ['place-search', searchText],
+    queryFn: () => geocodePlace(searchText),
+    enabled: searchText.length > 0,
+    staleTime: 300_000,
+  })
+
+  const firstSearchBench = searchBenches[0]
+  const searchFocus = firstSearchBench
+    ? { lat: firstSearchBench.lat, lng: firstSearchBench.lng, zoom: 16 }
+    : searchPlace
+      ? { lat: searchPlace.lat, lng: searchPlace.lng, zoom: 13 }
+      : null
+
+  const benchesOverride = searchText && searchBenches.length > 0 ? searchBenches : undefined
 
   return (
     <div className="relative h-full w-full">
       <BenchMap
-        filters={activeFilters}
+        filters={filters}
         userLocation={userLocation}
+        focusLocation={searchFocus}
+        benchesOverride={benchesOverride}
+        loadingOverride={isSearchingBenches || isSearchingPlace}
         onBenchSelect={(id) => navigate(`/bank/${id}`)}
       />
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[900]">

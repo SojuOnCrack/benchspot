@@ -7,6 +7,7 @@ import {
   fetchBenchesInBounds,
   fetchOpenReports,
   fetchProfilesForAdmin,
+  searchBenches,
 } from '@/lib/api/benches'
 import type { BenchFilters, MapBounds } from '@/types/database'
 
@@ -17,6 +18,15 @@ export function useBenchesInBounds(bounds: MapBounds | null, filters: BenchFilte
     enabled: bounds !== null,
     staleTime: 30_000,
     placeholderData: (prev) => prev,
+  })
+}
+
+export function useBenchSearch(searchText: string) {
+  return useQuery({
+    queryKey: ['bench-search', searchText],
+    queryFn: () => searchBenches(searchText),
+    enabled: searchText.trim().length > 0,
+    staleTime: 60_000,
   })
 }
 

@@ -125,3 +125,42 @@ language sql stable as $$
     )
   limit 2000;
 $$;
+
+create or replace function public.search_benches(
+  search_text text,
+  result_limit integer default 50
+)
+returns setof public.benches
+language sql stable as $$
+  select b.*
+  from public.benches b
+  where b.status = 'published'
+    and (
+      coalesce(nullif(trim(search_text), ''), '') = ''
+      or to_tsvector(
+        'simple',
+        concat_ws(
+          ' ',
+          b.title,
+          b.description,
+          b.notes,
+          b.category,
+          b.material,
+          case when b.wheelchair_accessible then 'barrierefrei rollstuhl accessible' end,
+          case when b.shade then 'schatten shade' end,
+          case when b.sun then 'sonnig sun' end,
+          case when b.dog_friendly then 'hunde hund dog' end,
+          case when b.has_playground then 'spielplatz kinder playground' end,
+          case when b.has_table then 'tisch table picknick' end,
+          case when b.view_lake or b.view_river or b.view_mountain or b.view_city then 'aussicht panorama blick view' end,
+          case when b.is_quiet then 'ruhig quiet' end,
+          case when b.picnic_friendly then 'picknick picnic' end
+        )
+      ) @@ plainto_tsquery('simple', search_text)
+      or b.title ilike '%' || search_text || '%'
+      or b.description ilike '%' || search_text || '%'
+      or b.notes ilike '%' || search_text || '%'
+    )
+  order by b.rating_count desc, b.created_at desc
+  limit greatest(1, least(result_limit, 100));
+$$;
