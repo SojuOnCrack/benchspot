@@ -2,9 +2,25 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
+import fs from 'fs'
+
+const buildId = `${Date.now()}`
+
+function writeVersionFile() {
+  return {
+    name: 'write-version-file',
+    writeBundle(options: { dir?: string }) {
+      const outDir = options.dir ?? 'dist'
+      fs.writeFileSync(path.join(outDir, 'version.json'), JSON.stringify({ buildId }))
+    },
+  }
+}
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), writeVersionFile()],
+  define: {
+    __APP_BUILD_ID__: JSON.stringify(buildId),
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
