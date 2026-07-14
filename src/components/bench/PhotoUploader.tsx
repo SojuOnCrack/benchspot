@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ImagePlus, X } from 'lucide-react'
 
 interface PhotoUploaderProps {
@@ -31,6 +31,15 @@ async function compressImage(file: File): Promise<File> {
 export default function PhotoUploader({ files, onChange, max = 8 }: PhotoUploaderProps) {
   const [busy, setBusy] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const [previews, setPreviews] = useState<string[]>([])
+
+  useEffect(() => {
+    const urls = files.map((file) => URL.createObjectURL(file))
+    setPreviews(urls)
+    return () => {
+      urls.forEach((url) => URL.revokeObjectURL(url))
+    }
+  }, [files])
 
   const addFiles = useCallback(
     async (incoming: FileList | null) => {
@@ -52,9 +61,9 @@ export default function PhotoUploader({ files, onChange, max = 8 }: PhotoUploade
   return (
     <div>
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-        {files.map((file, i) => (
+        {files.map((_file, i) => (
           <div key={i} className="relative aspect-square overflow-hidden rounded-xl">
-            <img src={URL.createObjectURL(file)} alt="" className="h-full w-full object-cover" />
+            <img src={previews[i]} alt="" className="h-full w-full object-cover" />
             <button
               type="button"
               onClick={() => removeAt(i)}

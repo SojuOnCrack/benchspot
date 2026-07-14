@@ -46,10 +46,13 @@ function ViewportTracker({ onBoundsChange }: { onBoundsChange: (b: MapBounds) =>
 function FlyToUser({ lat, lng }: { lat: number; lng: number }) {
   const map = useMap()
   const flownRef = useRef(false)
-  if (!flownRef.current) {
+
+  useEffect(() => {
+    if (flownRef.current) return
     map.flyTo([lat, lng], 15, { duration: 1.2 })
     flownRef.current = true
-  }
+  }, [lat, lng, map])
+
   return null
 }
 
@@ -137,6 +140,3 @@ export default function BenchMap({
     </div>
   )
 }
-
-// verhindert TS "unused" Warnung falls L direkt referenziert werden soll
-void L
