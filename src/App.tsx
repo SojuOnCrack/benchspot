@@ -16,6 +16,8 @@ const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'))
 const AuthCallbackPage = lazy(() => import('@/pages/auth/AuthCallbackPage'))
 const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'))
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
+const ImpressumPage = lazy(() => import('@/pages/legal/ImpressumPage'))
+const DatenschutzPage = lazy(() => import('@/pages/legal/DatenschutzPage'))
 
 export default function App() {
   return (
@@ -61,6 +63,8 @@ export default function App() {
           <Route path="/passwort-vergessen" element={<ForgotPasswordPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/impressum" element={<ImpressumPage />} />
+          <Route path="/datenschutz" element={<DatenschutzPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

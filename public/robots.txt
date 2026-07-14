@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /profil
+Disallow: /favoriten
+Disallow: /hinzufuegen
+
+Sitemap: https://benchspots.magicthedrinkering.com/sitemap.xml

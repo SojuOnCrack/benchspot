@@ -7,6 +7,7 @@ import { useBench, useBenchComments, useBenchPhotos, useBenchRatings } from '@/h
 import { addBenchComment, upsertBenchRating } from '@/lib/api/benches'
 import PageSkeleton from '@/components/ui/PageSkeleton'
 import BenchAttributeGrid from '@/components/bench/BenchAttributeGrid'
+import { useDocumentMeta } from '@/hooks/useDocumentMeta'
 
 export default function BenchDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -17,6 +18,11 @@ export default function BenchDetailPage() {
   const { data: ratings = [] } = useBenchRatings(id)
   const { data: comments = [] } = useBenchComments(id)
   const [comment, setComment] = useState('')
+
+  useDocumentMeta({
+    title: bench?.title ?? 'Parkbank',
+    description: bench?.description || `Eine Parkbank auf BenchSpot${bench?.title ? `: ${bench.title}` : ''}.`,
+  })
 
   const ratingMutation = useMutation({
     mutationFn: (stars: number) => upsertBenchRating(id as string, user?.id as string, stars),

@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { LogOut, TreeDeciduous, Star, Award, Save } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuthContext'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 const FIELD_CLASS = 'mt-1 w-full rounded-xl border border-forest-100 bg-white px-3.5 py-2.5 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-forest-400 dark:border-white/10 dark:bg-stone-900 dark:text-stone-100 dark:placeholder:text-stone-500'
 
@@ -157,9 +157,14 @@ export default function ProfilePage() {
         <p className="text-sm text-stone-500 dark:text-stone-400">Noch keine Errungenschaften freigeschaltet.</p>
       </div>
 
+      <div className="mt-8 flex justify-center gap-4 text-xs text-stone-400 dark:text-stone-500">
+        <Link to="/impressum" className="hover:text-stone-600 dark:hover:text-stone-300">Impressum</Link>
+        <Link to="/datenschutz" className="hover:text-stone-600 dark:hover:text-stone-300">Datenschutz</Link>
+      </div>
+
       <button
         onClick={handleSignOut}
-        className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl border border-red-100 py-2.5 text-sm font-medium text-red-500 transition hover:bg-red-50 dark:border-red-500/20 dark:hover:bg-red-500/10"
+        className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-red-100 py-2.5 text-sm font-medium text-red-500 transition hover:bg-red-50 dark:border-red-500/20 dark:hover:bg-red-500/10"
       >
         <LogOut size={16} />
         Abmelden
