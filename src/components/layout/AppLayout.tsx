@@ -13,15 +13,12 @@ export default function AppLayout() {
       <main className="relative flex-1 overflow-hidden">
         {updateAvailable && <UpdateBanner />}
         <Outlet />
-        <div className="pointer-events-none absolute bottom-2 left-2 z-[800] flex gap-2 text-[11px] text-stone-500/80 dark:text-stone-400/70">
-          <Link to="/impressum" className="pointer-events-auto rounded bg-white/70 px-1.5 py-0.5 backdrop-blur hover:text-stone-800 dark:bg-black/40 dark:hover:text-stone-100">
-            Impressum
-          </Link>
-          <Link to="/datenschutz" className="pointer-events-auto rounded bg-white/70 px-1.5 py-0.5 backdrop-blur hover:text-stone-800 dark:bg-black/40 dark:hover:text-stone-100">
-            Datenschutz
-          </Link>
-        </div>
       </main>
+      <footer className="flex shrink-0 items-center justify-center gap-3 border-t border-forest-100 bg-white/95 py-1.5 text-[11px] text-stone-400 backdrop-blur-md dark:border-white/10 dark:bg-ink-900/95 dark:text-stone-500">
+        <Link to="/impressum" className="hover:text-stone-700 dark:hover:text-stone-300">Impressum</Link>
+        <span aria-hidden="true">·</span>
+        <Link to="/datenschutz" className="hover:text-stone-700 dark:hover:text-stone-300">Datenschutz</Link>
+      </footer>
       <BottomNav />
     </div>
   )
