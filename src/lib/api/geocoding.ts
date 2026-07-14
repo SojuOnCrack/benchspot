@@ -4,12 +4,6 @@ export interface PlaceResult {
   lng: number
 }
 
-interface NominatimResult {
-  display_name: string
-  lat: string
-  lon: string
-}
-
 const KNOWN_PLACES: Record<string, PlaceResult> = {
   berlin: { label: 'Berlin, Deutschland', lat: 52.517, lng: 13.3889 },
   hamburg: { label: 'Hamburg, Deutschland', lat: 53.5503, lng: 10.0007 },
@@ -41,23 +35,12 @@ export async function geocodePlace(query: string): Promise<PlaceResult | null> {
   const knownPlace = KNOWN_PLACES[normalizePlaceQuery(search)]
   if (knownPlace) return knownPlace
 
-  const params = new URLSearchParams({
-    q: search,
-    format: 'jsonv2',
-    limit: '1',
-    addressdetails: '0',
-    'accept-language': 'de',
-  })
-
-  const response = await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`)
+  // Laeuft ueber unsere eigene Cloudflare Pages Function (functions/api/geocode.ts),
+  // die Nominatim server-seitig anfragt. Direkte Browser-Aufrufe gegen
+  // nominatim.openstreetmap.org werden von deren CORS/Rate-Limit haeufig blockiert.
+  const response = await fetch(`/api/geocode?q=${encodeURIComponent(search)}`)
   if (!response.ok) return null
 
-  const [result] = await response.json() as NominatimResult[]
-  if (!result) return null
-
-  return {
-    label: result.display_name,
-    lat: Number(result.lat),
-    lng: Number(result.lon),
-  }
+  const result = (await response.json()) as PlaceResult | null
+  return result
 }

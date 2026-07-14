@@ -7,7 +7,7 @@ export default function DatenschutzPage() {
 
   return (
     <div className="mx-auto h-full max-w-xl overflow-y-auto px-4 py-6">
-      <Link to="/profil" className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-forest-600">
+      <Link to="/" className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-forest-600">
         <ArrowLeft size={16} /> Zurück
       </Link>
 
