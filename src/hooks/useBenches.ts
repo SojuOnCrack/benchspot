@@ -5,6 +5,7 @@ import {
   fetchBenchPhotos,
   fetchBenchRatings,
   fetchBenchesInBounds,
+  fetchBenchesForAdmin,
   fetchOpenReports,
   fetchProfilesForAdmin,
   searchBenches,
@@ -74,6 +75,14 @@ export function useAdminProfiles(search: string, enabled = true) {
   return useQuery({
     queryKey: ['admin-profiles', search],
     queryFn: () => fetchProfilesForAdmin(search),
+    enabled,
+  })
+}
+
+export function useAdminBenches(search: string, enabled = true) {
+  return useQuery({
+    queryKey: ['admin-benches', search],
+    queryFn: () => fetchBenchesForAdmin(search),
     enabled,
   })
 }

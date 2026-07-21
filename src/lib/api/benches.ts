@@ -237,3 +237,34 @@ export async function setProfileBlocked(id: string, isBlocked: boolean) {
   if (error) throw error
   return data as Profile & { is_blocked?: boolean }
 }
+
+export async function fetchBenchesForAdmin(search = '') {
+  let query = supabase
+    .from('benches')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  if (search.trim()) query = query.ilike('title', `%${search.trim()}%`)
+
+  const { data, error } = await query
+  if (error) throw error
+  return data as Bench[]
+}
+
+export async function updateBenchStatusAdmin(id: string, status: Bench['status']) {
+  const { data, error } = await supabase
+    .from('benches')
+    .update({ status })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data as Bench
+}
+
+export async function deleteBenchAdmin(id: string) {
+  const { error } = await supabase.from('benches').delete().eq('id', id)
+  if (error) throw error
+}

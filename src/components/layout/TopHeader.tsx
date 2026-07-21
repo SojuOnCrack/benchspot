@@ -1,6 +1,6 @@
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import { TreePine, Search, Moon, Sun } from 'lucide-react'
+import { TreePine, Search, Moon, Sun, ShieldCheck, UserRound, ChevronDown } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
 import { useAuth } from '@/hooks/useAuthContext'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -13,6 +13,8 @@ export default function TopHeader() {
   const [searchParams] = useSearchParams()
   const [query, setQuery] = useState(searchParams.get('q') ?? '')
   const debouncedQuery = useDebounce(query, 450)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setQuery(searchParams.get('q') ?? '')
@@ -29,6 +31,15 @@ export default function TopHeader() {
     navigate({ pathname: '/', search: params.toString() }, { replace: location.pathname === '/' })
   }, [debouncedQuery, location.pathname, navigate, searchParams])
 
+  useEffect(() => {
+    if (!menuOpen) return
+    const onClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [menuOpen])
+
   const submitSearch = (event: FormEvent) => {
     event.preventDefault()
     const params = new URLSearchParams()
@@ -36,7 +47,7 @@ export default function TopHeader() {
     navigate({ pathname: '/', search: params.toString() })
   }
 
-  const profileTarget = profile?.role === 'admin' || profile?.role === 'moderator' ? '/admin' : '/profil'
+  const isPrivileged = profile?.role === 'admin' || profile?.role === 'moderator'
 
   return (
     <header className="flex items-center justify-between gap-3 border-b border-forest-100 bg-white/90 px-4 py-3 text-stone-800 backdrop-blur-md dark:border-white/10 dark:bg-ink-900/90 dark:text-stone-100">
@@ -70,13 +81,58 @@ export default function TopHeader() {
           {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
         </button>
         {user ? (
-          <Link to={profileTarget} className="flex items-center gap-2">
-            <img
-              src={profile?.avatar_url ?? `https://api.dicebear.com/9.x/notionists/svg?seed=${user.id}`}
-              alt=""
-              className="h-8 w-8 rounded-full border border-forest-100 bg-white object-cover dark:border-white/10"
-            />
-          </Link>
+          isPrivileged ? (
+            <div className="relative" ref={menuRef}>
+              <button
+                type="button"
+                onClick={() => setMenuOpen((open) => !open)}
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                className="flex items-center gap-1 rounded-full pr-1 transition hover:bg-forest-50 dark:hover:bg-white/10"
+              >
+                <img
+                  src={profile?.avatar_url ?? `https://api.dicebear.com/9.x/notionists/svg?seed=${user.id}`}
+                  alt=""
+                  className="h-8 w-8 rounded-full border border-forest-100 bg-white object-cover dark:border-white/10"
+                />
+                <ChevronDown size={14} className={`text-stone-500 transition-transform dark:text-stone-300 ${menuOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {menuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 top-full mt-2 w-44 overflow-hidden rounded-xl border border-forest-100 bg-white py-1 text-sm shadow-lg dark:border-white/10 dark:bg-stone-900"
+                >
+                  <Link
+                    to="/admin"
+                    role="menuitem"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 text-stone-700 transition hover:bg-forest-50 dark:text-stone-100 dark:hover:bg-white/10"
+                  >
+                    <ShieldCheck size={16} className="text-forest-600 dark:text-forest-300" />
+                    Admin
+                  </Link>
+                  <Link
+                    to="/profil"
+                    role="menuitem"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 text-stone-700 transition hover:bg-forest-50 dark:text-stone-100 dark:hover:bg-white/10"
+                  >
+                    <UserRound size={16} className="text-forest-600 dark:text-forest-300" />
+                    Profil
+                  </Link>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link to="/profil" className="flex items-center gap-2">
+              <img
+                src={profile?.avatar_url ?? `https://api.dicebear.com/9.x/notionists/svg?seed=${user.id}`}
+                alt=""
+                className="h-8 w-8 rounded-full border border-forest-100 bg-white object-cover dark:border-white/10"
+              />
+            </Link>
+          )
         ) : (
           <Link
             to="/login"
