@@ -50,7 +50,7 @@ export default function TopHeader() {
   const isPrivileged = profile?.role === 'admin' || profile?.role === 'moderator'
 
   return (
-    <header className="flex items-center justify-between gap-3 border-b border-forest-100 bg-white/90 px-4 py-3 text-stone-800 backdrop-blur-md dark:border-white/10 dark:bg-ink-900/90 dark:text-stone-100">
+    <header className="relative z-[1100] flex items-center justify-between gap-3 border-b border-forest-100 bg-white/90 px-4 py-3 text-stone-800 backdrop-blur-md dark:border-white/10 dark:bg-ink-900/90 dark:text-stone-100">
       <Link to="/" className="flex items-center gap-2 font-semibold text-forest-700 dark:text-forest-200">
         <TreePine size={22} className="shrink-0" />
         <span className="hidden sm:inline">BenchSpot</span>
