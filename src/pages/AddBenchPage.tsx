@@ -44,7 +44,7 @@ const FEATURE_TOGGLES: Array<{ key: keyof BenchFormValues; icon: typeof Accessib
 export default function AddBenchPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const geo = useGeolocation(false, true)
+  const geo = useGeolocation(false, false)
   const [photos, setPhotos] = useState<File[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)

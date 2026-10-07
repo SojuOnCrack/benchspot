@@ -33,6 +33,7 @@ export default function DatenschutzPage() {
             <li>Account: E-Mail-Adresse, Username, optionaler Anzeigename, optionale Bio, optionales Profilbild</li>
             <li>Inhalte: von euch erstellte Bank-Einträge (inkl. GPS-Koordinaten des Standorts), Fotos, Bewertungen, Kommentare</li>
             <li>Technisch: Login-Session (per Cookie/Local Storage von Supabase Auth verwaltet)</li>
+            <li>Standort: Browser-Geolocation nur nach Klick auf den Standort-Button; die Koordinaten werden fuer die Kartenansicht genutzt.</li>
           </ul>
         </section>
 
@@ -64,7 +65,18 @@ export default function DatenschutzPage() {
         </section>
 
         <section>
-          <h2 className="mb-1 font-semibold text-stone-800 dark:text-stone-100">6. Eure Rechte</h2>
+          <h2 className="mb-1 font-semibold text-stone-800 dark:text-stone-100">6. Karten und externe Links</h2>
+          <p>
+            Die Kartenansicht laedt Kartenkacheln von dem konfigurierten Tile-Anbieter (standardmaessig OpenStreetMap).
+            Dabei koennen IP-Adresse, Browserdaten und Kartenausschnitt an diesen Anbieter uebermittelt werden. Links
+            zur Navigation fuehren zu Google Maps; erst beim Anklicken gelten die Datenschutzbedingungen von Google.
+            Profil-Avatare werden ohne externen Avatar-Dienst lokal aus Initialen dargestellt, sofern kein eigenes
+            Profilbild gespeichert ist.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="mb-1 font-semibold text-stone-800 dark:text-stone-100">7. Eure Rechte</h2>
           <p>
             Ihr habt das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17),
             Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) sowie Widerspruch (Art. 21).
@@ -73,7 +85,7 @@ export default function DatenschutzPage() {
         </section>
 
         <section>
-          <h2 className="mb-1 font-semibold text-stone-800 dark:text-stone-100">7. Kontakt</h2>
+          <h2 className="mb-1 font-semibold text-stone-800 dark:text-stone-100">8. Kontakt</h2>
           <p>Für Anfragen zum Datenschutz: [kontakt@example.com]</p>
         </section>
       </div>

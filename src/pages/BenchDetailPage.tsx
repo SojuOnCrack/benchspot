@@ -1,23 +1,40 @@
 import { FormEvent, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Navigation, Star, Heart, Share2, Send } from 'lucide-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { ArrowLeft, Navigation, Star, Heart, Share2, Send, Flag, X, Trash2 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuthContext'
 import { useBench, useBenchComments, useBenchPhotos, useBenchRatings } from '@/hooks/useBenches'
-import { addBenchComment, upsertBenchRating } from '@/lib/api/benches'
+import {
+  addBenchComment,
+  createReport,
+  deleteBenchPhoto,
+  fetchFavoriteBenchIds,
+  toggleFavorite,
+  upsertBenchRating,
+} from '@/lib/api/benches'
 import PageSkeleton from '@/components/ui/PageSkeleton'
 import BenchAttributeGrid from '@/components/bench/BenchAttributeGrid'
 import { useDocumentMeta } from '@/hooks/useDocumentMeta'
+import type { Report } from '@/types/database'
 
 export default function BenchDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const { data: bench, isLoading } = useBench(id)
-  const { data: photos = [] } = useBenchPhotos(id)
-  const { data: ratings = [] } = useBenchRatings(id)
-  const { data: comments = [] } = useBenchComments(id)
+  const { data: photos = [], isLoading: photosLoading, isError: photosError } = useBenchPhotos(id)
+  const { data: ratings = [], isLoading: ratingsLoading, isError: ratingsError } = useBenchRatings(id)
+  const { data: comments = [], isLoading: commentsLoading, isError: commentsError } = useBenchComments(id)
+  const { data: favoriteIds = [] } = useQuery({
+    queryKey: ['favorites', user?.id],
+    queryFn: () => fetchFavoriteBenchIds(user?.id as string),
+    enabled: !!user,
+  })
   const [comment, setComment] = useState('')
+  const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null)
+  const [reportOpen, setReportOpen] = useState(false)
+  const [reportReason, setReportReason] = useState<Report['reason']>('spam')
+  const [reportDetails, setReportDetails] = useState('')
 
   useDocumentMeta({
     title: bench?.title ?? 'Parkbank',
@@ -40,6 +57,27 @@ export default function BenchDetailPage() {
     },
   })
 
+  const favoriteMutation = useMutation({
+    mutationFn: () => toggleFavorite(user?.id as string, id as string, favoriteIds.includes(id as string)),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['favorites', user?.id] }),
+  })
+
+  const reportMutation = useMutation({
+    mutationFn: () => createReport(user?.id as string, 'bench', id as string, reportReason, reportDetails),
+    onSuccess: () => {
+      setReportOpen(false)
+      setReportDetails('')
+    },
+  })
+
+  const photoDeleteMutation = useMutation({
+    mutationFn: deleteBenchPhoto,
+    onSuccess: () => {
+      setSelectedPhoto(null)
+      queryClient.invalidateQueries({ queryKey: ['bench-photos', id] })
+    },
+  })
+
   const submitComment = (event: FormEvent) => {
     event.preventDefault()
     if (!user || !comment.trim()) return
@@ -51,6 +89,8 @@ export default function BenchDetailPage() {
 
   const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${bench.lat},${bench.lng}`
   const ownRating = ratings.find((rating) => rating.user_id === user?.id)?.stars ?? 0
+  const isFavorite = favoriteIds.includes(bench.id)
+  const isOwner = user?.id === bench.owner_id
 
   return (
     <div className="h-full overflow-y-auto pb-24 text-stone-800 dark:text-stone-100">
@@ -63,17 +103,42 @@ export default function BenchDetailPage() {
           <ArrowLeft size={18} />
         </Link>
         <div className="absolute right-4 top-4 z-10 flex gap-2">
-          <button className="rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100" aria-label="Favorisieren">
-            <Heart size={18} />
+          <button
+            type="button"
+            onClick={() => user && favoriteMutation.mutate()}
+            disabled={!user || favoriteMutation.isPending}
+            className="rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur disabled:opacity-50 dark:bg-stone-900/95 dark:text-stone-100"
+            aria-label="Favorisieren"
+          >
+            <Heart size={18} className={isFavorite ? 'fill-red-500 text-red-500' : ''} />
           </button>
           <button className="rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100" aria-label="Teilen">
             <Share2 size={18} />
           </button>
+          <button
+            type="button"
+            onClick={() => setReportOpen(true)}
+            disabled={!user}
+            className="rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur disabled:opacity-50 dark:bg-stone-900/95 dark:text-stone-100"
+            aria-label="Melden"
+          >
+            <Flag size={18} />
+          </button>
         </div>
-        {photos.length > 0 ? (
+        {photosLoading ? (
+          <div className="flex h-full items-center justify-center bg-forest-50 text-forest-700 dark:bg-stone-900 dark:text-forest-200">
+            Fotos werden geladen...
+          </div>
+        ) : photosError ? (
+          <div className="flex h-full items-center justify-center bg-red-50 px-6 text-center text-sm text-red-600 dark:bg-red-500/10">
+            Fotos konnten nicht geladen werden.
+          </div>
+        ) : photos.length > 0 ? (
           <div className="flex h-full snap-x overflow-x-auto">
-            {photos.map((photo) => (
-              <img key={photo.id} src={photo.public_url} alt="" className="h-full min-w-full snap-center object-cover" />
+            {photos.map((photo, index) => (
+              <button key={photo.id} type="button" onClick={() => setSelectedPhoto(index)} className="h-full min-w-full snap-center">
+                <img src={photo.public_url} alt="" className="h-full w-full object-cover" />
+              </button>
             ))}
           </div>
         ) : (
@@ -131,6 +196,8 @@ export default function BenchDetailPage() {
               </button>
             ))}
           </div>
+          {ratingsLoading && <p className="text-sm text-stone-500 dark:text-stone-400">Bewertungen werden geladen...</p>}
+          {ratingsError && <p className="text-sm text-red-500">Bewertungen konnten nicht geladen werden.</p>}
           {!user && <p className="text-sm text-stone-500 dark:text-stone-400">Zum Bewerten bitte anmelden.</p>}
         </section>
 
@@ -152,10 +219,12 @@ export default function BenchDetailPage() {
               >
                 <Send size={18} />
               </button>
-            </form>
+          </form>
           )}
           <div className="space-y-2">
-            {comments.length === 0 && <p className="text-sm text-stone-500 dark:text-stone-400">Noch keine Kommentare.</p>}
+            {commentsLoading && <p className="text-sm text-stone-500 dark:text-stone-400">Kommentare werden geladen...</p>}
+            {commentsError && <p className="text-sm text-red-500">Kommentare konnten nicht geladen werden.</p>}
+            {!commentsLoading && comments.length === 0 && <p className="text-sm text-stone-500 dark:text-stone-400">Noch keine Kommentare.</p>}
             {comments.map((item) => (
               <article key={item.id} className="rounded-2xl bg-white p-4 text-sm shadow-sm dark:bg-white/5">
                 <div className="font-medium text-stone-800 dark:text-stone-100">
@@ -167,6 +236,77 @@ export default function BenchDetailPage() {
           </div>
         </section>
       </div>
+
+      {selectedPhoto !== null && photos[selectedPhoto] && (
+        <div className="fixed inset-0 z-[2000] bg-black/90 p-4 text-white">
+          <button
+            type="button"
+            onClick={() => setSelectedPhoto(null)}
+            className="absolute right-4 top-4 rounded-full bg-white/10 p-2"
+            aria-label="Schliessen"
+          >
+            <X size={22} />
+          </button>
+          {isOwner && (
+            <button
+              type="button"
+              onClick={() => photoDeleteMutation.mutate(photos[selectedPhoto])}
+              disabled={photoDeleteMutation.isPending}
+              className="absolute left-4 top-4 rounded-full bg-white/10 p-2 disabled:opacity-50"
+              aria-label="Foto loeschen"
+            >
+              <Trash2 size={22} />
+            </button>
+          )}
+          <img src={photos[selectedPhoto].public_url} alt="" className="h-full w-full object-contain" />
+        </div>
+      )}
+
+      {reportOpen && (
+        <div className="fixed inset-0 z-[2000] flex items-end bg-black/40 p-4 sm:items-center sm:justify-center">
+          <form
+            onSubmit={(event) => {
+              event.preventDefault()
+              if (user) reportMutation.mutate()
+            }}
+            className="w-full max-w-sm rounded-2xl bg-white p-4 shadow-xl dark:bg-stone-900"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold">Bank melden</h2>
+              <button type="button" onClick={() => setReportOpen(false)} aria-label="Schliessen">
+                <X size={18} />
+              </button>
+            </div>
+            <select
+              value={reportReason}
+              onChange={(event) => setReportReason(event.target.value as Report['reason'])}
+              className="mt-3 w-full rounded-xl border border-forest-100 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-stone-900"
+            >
+              <option value="spam">Spam</option>
+              <option value="inappropriate">Unpassend</option>
+              <option value="duplicate">Duplikat</option>
+              <option value="offensive">Beleidigend</option>
+              <option value="fake">Falscher Eintrag</option>
+              <option value="other">Sonstiges</option>
+            </select>
+            <textarea
+              value={reportDetails}
+              onChange={(event) => setReportDetails(event.target.value)}
+              rows={3}
+              placeholder="Optional: kurzer Hinweis"
+              className="mt-3 w-full rounded-xl border border-forest-100 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-stone-900"
+            />
+            {reportMutation.isError && <p className="mt-2 text-sm text-red-500">Meldung konnte nicht gesendet werden.</p>}
+            <button
+              type="submit"
+              disabled={!user || reportMutation.isPending}
+              className="mt-3 w-full rounded-xl bg-forest-600 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              {reportMutation.isPending ? 'Sende...' : 'Melden'}
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   )
 }

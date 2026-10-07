@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from 'react'
 import { LogOut, TreeDeciduous, Star, Award, Save } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuthContext'
 import { Link, useNavigate } from 'react-router-dom'
+import Avatar from '@/components/ui/Avatar'
 
 const FIELD_CLASS = 'mt-1 w-full rounded-xl border border-forest-100 bg-white px-3.5 py-2.5 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-forest-400 dark:border-white/10 dark:bg-stone-900 dark:text-stone-100 dark:placeholder:text-stone-500'
 
@@ -73,11 +74,7 @@ export default function ProfilePage() {
   return (
     <div className="h-full overflow-y-auto px-5 pb-24 pt-6 text-stone-800 dark:text-stone-100">
       <div className="flex flex-col items-center gap-3">
-        <img
-          src={profile?.avatar_url ?? `https://api.dicebear.com/9.x/notionists/svg?seed=${user?.id}`}
-          alt=""
-          className="h-20 w-20 rounded-full border border-forest-100 bg-white object-cover dark:border-white/10"
-        />
+        <Avatar profile={profile} userId={user?.id} size="lg" />
         <div className="text-center">
           <h1 className="text-lg font-semibold">
             {profile?.display_name ?? profile?.username ?? 'Nutzer'}

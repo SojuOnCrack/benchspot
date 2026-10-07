@@ -1,6 +1,9 @@
 import { supabase } from '@/lib/supabase'
 import type { Bench, BenchFilters, MapBounds, Photo, Rating, Comment, Report, Profile } from '@/types/database'
 
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024
+const ALLOWED_PHOTO_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
+
 export async function fetchBenchesInBounds(bounds: MapBounds, filters: BenchFilters = {}) {
   const { data, error } = await supabase.rpc('benches_in_bbox', {
     min_lat: bounds.minLat,
@@ -119,6 +122,9 @@ export async function uploadBenchPhotos(benchId: string, userId: string, files: 
   const rows: Array<Pick<Photo, 'bench_id' | 'uploader_id' | 'storage_path' | 'sort_order'>> = []
 
   for (const [index, file] of files.entries()) {
+    if (!ALLOWED_PHOTO_TYPES.has(file.type) || file.size > MAX_PHOTO_BYTES) {
+      throw new Error('Nur JPG, PNG oder WebP bis 5 MB pro Datei.')
+    }
     const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg'
     const path = `${benchId}/${crypto.randomUUID()}.${extension}`
     const { error } = await supabase.storage.from('bench-photos').upload(path, file, {
@@ -132,6 +138,14 @@ export async function uploadBenchPhotos(benchId: string, userId: string, files: 
   const { data, error } = await supabase.from('photos').insert(rows).select()
   if (error) throw error
   return data as Photo[]
+}
+
+export async function deleteBenchPhoto(photo: Photo) {
+  const storage = await supabase.storage.from('bench-photos').remove([photo.storage_path])
+  if (storage.error) throw storage.error
+
+  const { error } = await supabase.from('photos').delete().eq('id', photo.id)
+  if (error) throw error
 }
 
 export async function fetchBenchPhotos(benchId: string) {
@@ -193,6 +207,34 @@ export async function addBenchComment(benchId: string, userId: string, body: str
 
   if (error) throw error
   return data as Comment
+}
+
+export async function deleteBenchComment(id: string) {
+  const { error } = await supabase.from('comments').delete().eq('id', id)
+  if (error) throw error
+}
+
+export async function createReport(
+  reporterId: string,
+  targetType: Report['target_type'],
+  targetId: string,
+  reason: Report['reason'],
+  details?: string
+) {
+  const { data, error } = await supabase
+    .from('reports')
+    .insert({
+      reporter_id: reporterId,
+      target_type: targetType,
+      target_id: targetId,
+      reason,
+      details: details?.trim() || null,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data as Report
 }
 
 export async function fetchOpenReports() {

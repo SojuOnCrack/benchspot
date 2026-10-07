@@ -2,6 +2,7 @@ import { useCallback, useEffect } from 'react'
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet'
 import type { DragEndEvent } from 'leaflet'
 import { benchMarkerIcon } from '@/components/map/benchIcons'
+import { MAP_TILE_ATTRIBUTION, MAP_TILE_URL } from '@/lib/mapTiles'
 
 interface LocationPickerProps {
   lat: number
@@ -41,7 +42,7 @@ export default function LocationPicker({ lat, lng, onChange }: LocationPickerPro
   return (
     <div className="h-56 overflow-hidden rounded-2xl border border-forest-100">
       <MapContainer center={[lat, lng]} zoom={16} className="h-full w-full" scrollWheelZoom={false}>
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <TileLayer attribution={MAP_TILE_ATTRIBUTION} url={MAP_TILE_URL} />
         <ClickHandler onChange={onChange} />
         <RecenterMap lat={lat} lng={lng} />
         <Marker

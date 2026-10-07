@@ -4,6 +4,7 @@ import { TreePine, Search, Moon, Sun, ShieldCheck, UserRound, ChevronDown } from
 import { useTheme } from '@/hooks/useTheme'
 import { useAuth } from '@/hooks/useAuthContext'
 import { useDebounce } from '@/hooks/useDebounce'
+import Avatar from '@/components/ui/Avatar'
 
 export default function TopHeader() {
   const { theme, toggle } = useTheme()
@@ -15,21 +16,22 @@ export default function TopHeader() {
   const debouncedQuery = useDebounce(query, 450)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const urlQuery = searchParams.get('q') ?? ''
 
   useEffect(() => {
-    setQuery(searchParams.get('q') ?? '')
-  }, [searchParams])
+    setQuery(urlQuery)
+  }, [urlQuery])
 
   useEffect(() => {
     const nextQuery = debouncedQuery.trim()
-    const currentQuery = searchParams.get('q') ?? ''
+    const currentQuery = urlQuery
     if (nextQuery === currentQuery) return
     if (!nextQuery && !currentQuery && location.pathname === '/') return
 
     const params = new URLSearchParams()
     if (nextQuery) params.set('q', nextQuery)
     navigate({ pathname: '/', search: params.toString() }, { replace: location.pathname === '/' })
-  }, [debouncedQuery, location.pathname, navigate, searchParams])
+  }, [debouncedQuery, location.pathname, navigate, urlQuery])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -90,11 +92,7 @@ export default function TopHeader() {
                 aria-expanded={menuOpen}
                 className="flex items-center gap-1 rounded-full pr-1 transition hover:bg-forest-50 dark:hover:bg-white/10"
               >
-                <img
-                  src={profile?.avatar_url ?? `https://api.dicebear.com/9.x/notionists/svg?seed=${user.id}`}
-                  alt=""
-                  className="h-8 w-8 rounded-full border border-forest-100 bg-white object-cover dark:border-white/10"
-                />
+                <Avatar profile={profile} userId={user.id} />
                 <ChevronDown size={14} className={`text-stone-500 transition-transform dark:text-stone-300 ${menuOpen ? 'rotate-180' : ''}`} />
               </button>
 
@@ -126,11 +124,7 @@ export default function TopHeader() {
             </div>
           ) : (
             <Link to="/profil" className="flex items-center gap-2">
-              <img
-                src={profile?.avatar_url ?? `https://api.dicebear.com/9.x/notionists/svg?seed=${user.id}`}
-                alt=""
-                className="h-8 w-8 rounded-full border border-forest-100 bg-white object-cover dark:border-white/10"
-              />
+              <Avatar profile={profile} userId={user.id} />
             </Link>
           )
         ) : (
