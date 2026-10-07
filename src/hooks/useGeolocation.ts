@@ -34,12 +34,18 @@ export function useGeolocation(watch = false, requestOnMount = false) {
   }, [])
 
   const applyError = useCallback((err: GeolocationPositionError) => {
-    setState((s) => ({ ...s, error: err.message, loading: false }))
+    const message =
+      err.code === err.PERMISSION_DENIED
+        ? 'Standortzugriff wurde verweigert. Bitte in den Browser-Einstellungen erlauben.'
+        : err.code === err.TIMEOUT
+          ? 'Standort konnte nicht rechtzeitig ermittelt werden.'
+          : 'Standort ist derzeit nicht verfügbar.'
+    setState((s) => ({ ...s, error: message, loading: false }))
   }, [])
 
   const canUseGeolocation = useCallback(() => {
     if (!('geolocation' in navigator)) {
-      setState((s) => ({ ...s, error: 'Geolocation wird nicht unterstuetzt', loading: false }))
+      setState((s) => ({ ...s, error: 'Standortermittlung wird von diesem Browser nicht unterstützt.', loading: false }))
       return false
     }
 

@@ -13,7 +13,7 @@ function profileErrorMessage(err: unknown) {
   if (typeof err === 'object' && err && 'code' in err) {
     const code = String((err as { code?: unknown }).code)
     if (code === '23505') return 'Dieser Username ist schon vergeben.'
-    if (code === '42501') return 'Supabase blockiert das Speichern. Bitte pruefe die profiles RLS-Policies/Migrationen.'
+    if (code === '42501') return 'Supabase blockiert das Speichern. Bitte prüfe die profiles RLS-Policies/Migrationen.'
     if (code === 'PGRST116') return 'Profil wurde noch nicht angelegt. Bitte nochmal speichern.'
   }
 
@@ -119,7 +119,7 @@ export default function ProfilePage() {
             value={bio}
             onChange={(event) => setBio(event.target.value)}
             rows={3}
-            placeholder="Kurz etwas ueber dich"
+            placeholder="Kurz etwas über dich"
             className={FIELD_CLASS}
           />
         </div>

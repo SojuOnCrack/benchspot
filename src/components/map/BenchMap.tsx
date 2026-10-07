@@ -15,7 +15,6 @@ interface BenchMapProps {
   focusLocation?: { lat: number; lng: number; zoom?: number } | null
   benchesOverride?: Bench[]
   loadingOverride?: boolean
-  onBenchSelect?: (id: string) => void
   className?: string
 }
 
@@ -72,7 +71,6 @@ export default function BenchMap({
   focusLocation,
   benchesOverride,
   loadingOverride,
-  onBenchSelect,
   className,
 }: BenchMapProps) {
   const [bounds, setBounds] = useState<MapBounds | null>(null)
@@ -128,7 +126,6 @@ export default function BenchMap({
               key={bench.id}
               position={[bench.lat, bench.lng]}
               icon={benchMarkerIcon}
-              eventHandlers={{ click: () => onBenchSelect?.(bench.id) }}
             >
               <Popup minWidth={220}>
                 <BenchMarkerPopup bench={bench} />

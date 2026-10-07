@@ -15,9 +15,13 @@ export default function TopHeader() {
   const debouncedQuery = useDebounce(query, 450)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const pushedQuery = useRef(searchParams.get('q') ?? '')
 
   useEffect(() => {
-    setQuery(searchParams.get('q') ?? '')
+    const urlQuery = searchParams.get('q') ?? ''
+    if (urlQuery === pushedQuery.current) return
+    pushedQuery.current = urlQuery
+    setQuery(urlQuery)
   }, [searchParams])
 
   useEffect(() => {
@@ -26,6 +30,7 @@ export default function TopHeader() {
     if (nextQuery === currentQuery) return
     if (!nextQuery && !currentQuery && location.pathname === '/') return
 
+    pushedQuery.current = nextQuery
     const params = new URLSearchParams()
     if (nextQuery) params.set('q', nextQuery)
     navigate({ pathname: '/', search: params.toString() }, { replace: location.pathname === '/' })
@@ -42,6 +47,7 @@ export default function TopHeader() {
 
   const submitSearch = (event: FormEvent) => {
     event.preventDefault()
+    pushedQuery.current = query.trim()
     const params = new URLSearchParams()
     if (query.trim()) params.set('q', query.trim())
     navigate({ pathname: '/', search: params.toString() })

@@ -1,16 +1,18 @@
 import { FormEvent, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useParams, Link, useLocation, useNavigate } from 'react-router-dom'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Navigation, Star, Heart, Share2, Send } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuthContext'
 import { useBench, useBenchComments, useBenchPhotos, useBenchRatings } from '@/hooks/useBenches'
-import { addBenchComment, upsertBenchRating } from '@/lib/api/benches'
+import { addBenchComment, fetchFavoriteBenchIds, toggleFavorite, upsertBenchRating } from '@/lib/api/benches'
 import PageSkeleton from '@/components/ui/PageSkeleton'
 import BenchAttributeGrid from '@/components/bench/BenchAttributeGrid'
 import { useDocumentMeta } from '@/hooks/useDocumentMeta'
 
 export default function BenchDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const { data: bench, isLoading } = useBench(id)
@@ -18,6 +20,35 @@ export default function BenchDetailPage() {
   const { data: ratings = [] } = useBenchRatings(id)
   const { data: comments = [] } = useBenchComments(id)
   const [comment, setComment] = useState('')
+  const [shareHint, setShareHint] = useState<string | null>(null)
+  const { data: favoriteIds = [] } = useQuery({
+    queryKey: ['favorite-ids', user?.id],
+    queryFn: () => fetchFavoriteBenchIds(user!.id),
+    enabled: !!user,
+  })
+  const isFavorite = !!id && favoriteIds.includes(id)
+
+  const favoriteMutation = useMutation({
+    mutationFn: () => toggleFavorite(user!.id, id as string, isFavorite),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['favorite-ids', user?.id] })
+      queryClient.invalidateQueries({ queryKey: ['favorites', user?.id] })
+    },
+  })
+
+  const share = async () => {
+    const url = window.location.href
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: bench?.title ?? 'BenchSpot', url })
+        return
+      }
+      await navigator.clipboard.writeText(url)
+      setShareHint('Link kopiert')
+    } catch {
+      setShareHint(null)
+    }
+  }
 
   useDocumentMeta({
     title: bench?.title ?? 'Parkbank',
@@ -58,17 +89,32 @@ export default function BenchDetailPage() {
         <Link
           to="/"
           className="absolute left-4 top-4 z-10 rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100"
-          aria-label="Zurueck"
+          aria-label="Zurück"
         >
           <ArrowLeft size={18} />
         </Link>
         <div className="absolute right-4 top-4 z-10 flex gap-2">
-          <button className="rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100" aria-label="Favorisieren">
-            <Heart size={18} />
+          <button
+            type="button"
+            onClick={() => (user ? favoriteMutation.mutate() : navigate('/login', { state: { from: location } }))}
+            disabled={favoriteMutation.isPending}
+            aria-pressed={isFavorite}
+            className="rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur disabled:opacity-60 dark:bg-stone-900/95 dark:text-stone-100"
+            aria-label={isFavorite ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'}
+          >
+            <Heart size={18} className={isFavorite ? 'fill-red-500 text-red-500' : ''} />
           </button>
-          <button className="rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100" aria-label="Teilen">
+          <button
+            type="button"
+            onClick={share}
+            className="rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100"
+            aria-label="Teilen"
+          >
             <Share2 size={18} />
           </button>
+          {shareHint && (
+            <span role="status" className="self-center rounded-full bg-white/95 px-2.5 py-1 text-xs text-stone-800 shadow-sm dark:bg-stone-900/95 dark:text-stone-100">{shareHint}</span>
+          )}
         </div>
         {photos.length > 0 ? (
           <div className="flex h-full snap-x overflow-x-auto">
