@@ -18,14 +18,14 @@ import ToggleField from '@/components/ui/ToggleField'
 const FIELD_CLASS = 'mt-1 w-full rounded-xl border border-forest-100 bg-white px-3.5 py-2.5 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-forest-400 dark:border-white/10 dark:bg-stone-900 dark:text-stone-100 dark:placeholder:text-stone-500'
 
 const FEATURE_TOGGLES: Array<{ key: keyof BenchFormValues; icon: typeof Accessibility; label: string }> = [
-  { key: 'has_roof', icon: Umbrella, label: 'Ueberdacht' },
+  { key: 'has_roof', icon: Umbrella, label: 'Überdacht' },
   { key: 'has_backrest', icon: Armchair, label: 'Mit Lehne' },
   { key: 'has_table', icon: Table2, label: 'Mit Tisch' },
   { key: 'wheelchair_accessible', icon: Accessibility, label: 'Rollstuhlgerecht' },
   { key: 'stroller_friendly', icon: Baby, label: 'Kinderwagen geeignet' },
-  { key: 'has_bike_rack', icon: Bike, label: 'Fahrradstaender' },
+  { key: 'has_bike_rack', icon: Bike, label: 'Fahrradständer' },
   { key: 'has_water_fountain', icon: Droplets, label: 'Trinkbrunnen' },
-  { key: 'has_trash_bin', icon: Trash2, label: 'Muelleimer' },
+  { key: 'has_trash_bin', icon: Trash2, label: 'Mülleimer' },
   { key: 'has_bbq', icon: Flame, label: 'Grillplatz' },
   { key: 'has_playground', icon: Baby, label: 'Spielplatz' },
   { key: 'dog_friendly', icon: Dog, label: 'Hunde erlaubt' },
@@ -101,7 +101,12 @@ export default function AddBenchPage() {
         },
         user.id
       )
-      await uploadBenchPhotos(bench.id, user.id, photos)
+      try {
+        await uploadBenchPhotos(bench.id, user.id, photos)
+      } catch {
+        // Bank existiert bereits – nicht erneut anlegen, Nutzer landet auf der Detailseite.
+        window.alert('Die Bank wurde gespeichert, aber die Fotos konnten nicht hochgeladen werden.')
+      }
       navigate(`/bank/${bench.id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Speichern fehlgeschlagen')
@@ -113,7 +118,7 @@ export default function AddBenchPage() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="h-full overflow-y-auto px-5 pb-28 pt-5 text-stone-800 dark:text-stone-100">
       <h1 className="text-lg font-semibold">Neue Parkbank</h1>
-      <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">Position, Details und Fotos hinzufuegen.</p>
+      <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">Position, Details und Fotos hinzufügen.</p>
 
       <section className="mt-5 space-y-2">
         <label className="text-sm font-medium text-stone-700 dark:text-stone-200">Position</label>
@@ -155,7 +160,7 @@ export default function AddBenchPage() {
               disabled={geo.loading}
               className="text-xs font-medium text-forest-700 disabled:opacity-60 dark:text-forest-300"
             >
-              {geo.loading ? 'Standort wird gesucht...' : 'Aktuellen Standort uebernehmen'}
+              {geo.loading ? 'Standort wird gesucht...' : 'Aktuellen Standort übernehmen'}
             </button>
           </>
         )}
@@ -187,8 +192,8 @@ export default function AddBenchPage() {
             </select>
           </div>
           <div>
-            <label htmlFor="seats" className="text-sm font-medium text-stone-700 dark:text-stone-200">Sitzplaetze</label>
-            <input id="seats" type="number" min={1} max={20} {...register('seats', { valueAsNumber: true })} className={FIELD_CLASS} />
+            <label htmlFor="seats" className="text-sm font-medium text-stone-700 dark:text-stone-200">Sitzplätze</label>
+            <input id="seats" type="number" min={1} max={20} {...register('seats', { setValueAs: (v) => (v === '' || v == null || Number.isNaN(Number(v)) ? undefined : Number(v)) })} className={FIELD_CLASS} />
           </div>
         </div>
       </section>
@@ -221,6 +226,9 @@ export default function AddBenchPage() {
         <textarea id="notes" {...register('notes')} rows={2} className={FIELD_CLASS} />
       </section>
 
+      {Object.keys(formState.errors).length > 0 && (
+        <p className="mt-4 text-sm text-red-500">Bitte prüfe die markierten Felder (Titel, Position, Sitzplätze).</p>
+      )}
       {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
 
       <button

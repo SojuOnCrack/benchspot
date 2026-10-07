@@ -1,4 +1,5 @@
 import { FormEvent, useState } from 'react'
+<<<<<<< HEAD
 import { useParams, Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Navigation, Star, Heart, Share2, Send, Flag, X, Trash2 } from 'lucide-react'
@@ -12,6 +13,14 @@ import {
   toggleFavorite,
   upsertBenchRating,
 } from '@/lib/api/benches'
+=======
+import { useParams, Link, useLocation, useNavigate } from 'react-router-dom'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { ArrowLeft, Navigation, Star, Heart, Share2, Send } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuthContext'
+import { useBench, useBenchComments, useBenchPhotos, useBenchRatings } from '@/hooks/useBenches'
+import { addBenchComment, fetchFavoriteBenchIds, toggleFavorite, upsertBenchRating } from '@/lib/api/benches'
+>>>>>>> a4da0105706eb3aa3b0a7e27e0158bb9469657c9
 import PageSkeleton from '@/components/ui/PageSkeleton'
 import BenchAttributeGrid from '@/components/bench/BenchAttributeGrid'
 import { useDocumentMeta } from '@/hooks/useDocumentMeta'
@@ -19,6 +28,8 @@ import type { Report } from '@/types/database'
 
 export default function BenchDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const { data: bench, isLoading } = useBench(id)
@@ -31,10 +42,42 @@ export default function BenchDetailPage() {
     enabled: !!user,
   })
   const [comment, setComment] = useState('')
+<<<<<<< HEAD
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null)
   const [reportOpen, setReportOpen] = useState(false)
   const [reportReason, setReportReason] = useState<Report['reason']>('spam')
   const [reportDetails, setReportDetails] = useState('')
+=======
+  const [shareHint, setShareHint] = useState<string | null>(null)
+  const { data: favoriteIds = [] } = useQuery({
+    queryKey: ['favorite-ids', user?.id],
+    queryFn: () => fetchFavoriteBenchIds(user!.id),
+    enabled: !!user,
+  })
+  const isFavorite = !!id && favoriteIds.includes(id)
+
+  const favoriteMutation = useMutation({
+    mutationFn: () => toggleFavorite(user!.id, id as string, isFavorite),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['favorite-ids', user?.id] })
+      queryClient.invalidateQueries({ queryKey: ['favorites', user?.id] })
+    },
+  })
+
+  const share = async () => {
+    const url = window.location.href
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: bench?.title ?? 'BenchSpot', url })
+        return
+      }
+      await navigator.clipboard.writeText(url)
+      setShareHint('Link kopiert')
+    } catch {
+      setShareHint(null)
+    }
+  }
+>>>>>>> a4da0105706eb3aa3b0a7e27e0158bb9469657c9
 
   useDocumentMeta({
     title: bench?.title ?? 'Parkbank',
@@ -98,23 +141,37 @@ export default function BenchDetailPage() {
         <Link
           to="/"
           className="absolute left-4 top-4 z-10 rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100"
-          aria-label="Zurueck"
+          aria-label="Zurück"
         >
           <ArrowLeft size={18} />
         </Link>
         <div className="absolute right-4 top-4 z-10 flex gap-2">
           <button
             type="button"
+<<<<<<< HEAD
             onClick={() => user && favoriteMutation.mutate()}
             disabled={!user || favoriteMutation.isPending}
             className="rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur disabled:opacity-50 dark:bg-stone-900/95 dark:text-stone-100"
             aria-label="Favorisieren"
+=======
+            onClick={() => (user ? favoriteMutation.mutate() : navigate('/login', { state: { from: location } }))}
+            disabled={favoriteMutation.isPending}
+            aria-pressed={isFavorite}
+            className="rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur disabled:opacity-60 dark:bg-stone-900/95 dark:text-stone-100"
+            aria-label={isFavorite ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'}
+>>>>>>> a4da0105706eb3aa3b0a7e27e0158bb9469657c9
           >
             <Heart size={18} className={isFavorite ? 'fill-red-500 text-red-500' : ''} />
           </button>
-          <button className="rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100" aria-label="Teilen">
+          <button
+            type="button"
+            onClick={share}
+            className="rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100"
+            aria-label="Teilen"
+          >
             <Share2 size={18} />
           </button>
+<<<<<<< HEAD
           <button
             type="button"
             onClick={() => setReportOpen(true)}
@@ -124,6 +181,11 @@ export default function BenchDetailPage() {
           >
             <Flag size={18} />
           </button>
+=======
+          {shareHint && (
+            <span role="status" className="self-center rounded-full bg-white/95 px-2.5 py-1 text-xs text-stone-800 shadow-sm dark:bg-stone-900/95 dark:text-stone-100">{shareHint}</span>
+          )}
+>>>>>>> a4da0105706eb3aa3b0a7e27e0158bb9469657c9
         </div>
         {photosLoading ? (
           <div className="flex h-full items-center justify-center bg-forest-50 text-forest-700 dark:bg-stone-900 dark:text-forest-200">

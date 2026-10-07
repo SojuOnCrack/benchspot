@@ -35,7 +35,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <AuthCard title="Neues Passwort" subtitle="Waehle ein sicheres Passwort">
+    <AuthCard title="Neues Passwort" subtitle="Wähle ein sicheres Passwort">
       <form onSubmit={onSubmit} className="space-y-3">
         <input
           type="password"

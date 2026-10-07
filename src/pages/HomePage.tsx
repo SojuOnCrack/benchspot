@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { LocateFixed } from 'lucide-react'
 import BenchMap from '@/components/map/BenchMap'
@@ -12,8 +12,12 @@ import type { BenchFilters } from '@/types/database'
 export default function HomePage() {
   const [filters, setFilters] = useState<BenchFilters>({})
   const [searchParams] = useSearchParams()
+<<<<<<< HEAD
   const geo = useGeolocation(false, false)
   const navigate = useNavigate()
+=======
+  const geo = useGeolocation(false, true)
+>>>>>>> a4da0105706eb3aa3b0a7e27e0158bb9469657c9
 
   const userLocation = geo.lat && geo.lng ? { lat: geo.lat, lng: geo.lng } : null
   const searchText = (searchParams.get('q') ?? '').trim()
@@ -42,7 +46,6 @@ export default function HomePage() {
         focusLocation={searchFocus}
         benchesOverride={benchesOverride}
         loadingOverride={isSearchingBenches || isSearchingPlace}
-        onBenchSelect={(id) => navigate(`/bank/${id}`)}
       />
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[900]">
         <FilterBar filters={filters} onChange={setFilters} />

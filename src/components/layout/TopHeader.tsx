@@ -16,11 +16,22 @@ export default function TopHeader() {
   const debouncedQuery = useDebounce(query, 450)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+<<<<<<< HEAD
   const urlQuery = searchParams.get('q') ?? ''
 
   useEffect(() => {
     setQuery(urlQuery)
   }, [urlQuery])
+=======
+  const pushedQuery = useRef(searchParams.get('q') ?? '')
+
+  useEffect(() => {
+    const urlQuery = searchParams.get('q') ?? ''
+    if (urlQuery === pushedQuery.current) return
+    pushedQuery.current = urlQuery
+    setQuery(urlQuery)
+  }, [searchParams])
+>>>>>>> a4da0105706eb3aa3b0a7e27e0158bb9469657c9
 
   useEffect(() => {
     const nextQuery = debouncedQuery.trim()
@@ -28,6 +39,7 @@ export default function TopHeader() {
     if (nextQuery === currentQuery) return
     if (!nextQuery && !currentQuery && location.pathname === '/') return
 
+    pushedQuery.current = nextQuery
     const params = new URLSearchParams()
     if (nextQuery) params.set('q', nextQuery)
     navigate({ pathname: '/', search: params.toString() }, { replace: location.pathname === '/' })
@@ -44,6 +56,7 @@ export default function TopHeader() {
 
   const submitSearch = (event: FormEvent) => {
     event.preventDefault()
+    pushedQuery.current = query.trim()
     const params = new URLSearchParams()
     if (query.trim()) params.set('q', query.trim())
     navigate({ pathname: '/', search: params.toString() })
