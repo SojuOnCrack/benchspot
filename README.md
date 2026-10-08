@@ -41,3 +41,8 @@ Redirect-URL `https://<domain>/auth/callback`.
 - Volltextsuche (Ort/Stadt/Eigenschaft) im Header
 - Service Worker für Offline-Hinweis + Asset-Caching
 - QR-Code- und GPX-Export je Bank
+
+
+
+
+----------------------------------------------------------
