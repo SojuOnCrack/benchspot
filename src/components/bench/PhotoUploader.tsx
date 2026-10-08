@@ -9,12 +9,8 @@ interface PhotoUploaderProps {
 
 const MAX_DIMENSION = 2000
 const JPEG_QUALITY = 0.82
-<<<<<<< HEAD
-const MAX_FILE_SIZE = 8 * 1024 * 1024
-=======
 const MAX_FILE_SIZE = 5 * 1024 * 1024
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
->>>>>>> 4ee86bc252e376d71094589ef2683c021bac92a7
 
 async function compressImage(file: File): Promise<File> {
   if (!file.type.startsWith('image/')) return file
@@ -55,10 +51,6 @@ export default function PhotoUploader({ files, onChange, max = 8 }: PhotoUploade
       setError(null)
       const remaining = max - files.length
       const selected = Array.from(incoming)
-<<<<<<< HEAD
-        .filter((file) => file.type.startsWith('image/') && file.size <= MAX_FILE_SIZE)
-        .slice(0, remaining)
-=======
         .filter((file) => ALLOWED_IMAGE_TYPES.has(file.type) && file.size <= MAX_FILE_SIZE)
         .slice(0, remaining)
 
@@ -66,7 +58,6 @@ export default function PhotoUploader({ files, onChange, max = 8 }: PhotoUploade
         setError('Nur JPG, PNG oder WebP bis 5 MB pro Datei.')
       }
 
->>>>>>> 4ee86bc252e376d71094589ef2683c021bac92a7
       const compressed = await Promise.all(selected.map(compressImage))
       onChange([...files, ...compressed])
       setBusy(false)

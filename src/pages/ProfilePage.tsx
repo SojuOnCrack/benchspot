@@ -23,7 +23,7 @@ function profileErrorMessage(err: unknown) {
 }
 
 export default function ProfilePage() {
-  const { profile, signOut, updateProfile } = useAuth()
+  const { user, profile, signOut, updateProfile } = useAuth()
   const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [displayName, setDisplayName] = useState('')
@@ -74,15 +74,7 @@ export default function ProfilePage() {
   return (
     <div className="h-full overflow-y-auto px-5 pb-24 pt-6 text-stone-800 dark:text-stone-100">
       <div className="flex flex-col items-center gap-3">
-<<<<<<< HEAD
-        <img
-          src={profile?.avatar_url ?? `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#3a6f3a"/><text x="32" y="40" text-anchor="middle" font-family="sans-serif" font-size="26" fill="white">${(profile?.display_name || profile?.username || 'B').slice(0, 1).toUpperCase()}</text></svg>`)}`}
-          alt=""
-          className="h-20 w-20 rounded-full border border-forest-100 bg-white object-cover dark:border-white/10"
-        />
-=======
         <Avatar profile={profile} userId={user?.id} size="lg" />
->>>>>>> 4ee86bc252e376d71094589ef2683c021bac92a7
         <div className="text-center">
           <h1 className="text-lg font-semibold">
             {profile?.display_name ?? profile?.username ?? 'Nutzer'}

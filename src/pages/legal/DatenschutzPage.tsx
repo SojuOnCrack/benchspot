@@ -76,8 +76,6 @@ export default function DatenschutzPage() {
         </section>
 
         <section>
-<<<<<<< HEAD
-=======
           <h2 className="mb-1 font-semibold text-stone-800 dark:text-stone-100">6. Karten und externe Links</h2>
           <p>
             Die Kartenansicht laedt Kartenkacheln von dem konfigurierten Tile-Anbieter (standardmaessig OpenStreetMap).
@@ -89,7 +87,6 @@ export default function DatenschutzPage() {
         </section>
 
         <section>
->>>>>>> 4ee86bc252e376d71094589ef2683c021bac92a7
           <h2 className="mb-1 font-semibold text-stone-800 dark:text-stone-100">7. Eure Rechte</h2>
           <p>
             Ihr habt das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17),

@@ -10,11 +10,6 @@ import { benchMarkerIcon, userLocationIcon } from './benchIcons'
 import BenchMarkerPopup from './BenchMarkerPopup'
 import 'leaflet/dist/leaflet.css'
 
-const mapTilerKey = import.meta.env.VITE_MAPTILER_KEY as string | undefined
-const tileUrl = mapTilerKey
-  ? `https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=${mapTilerKey}`
-  : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-
 interface BenchMapProps {
   filters: BenchFilters
   userLocation?: { lat: number; lng: number } | null
@@ -113,13 +108,8 @@ export default function BenchMap({
         preferCanvas
       >
         <TileLayer
-<<<<<<< HEAD
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende'
-          url={tileUrl}
-=======
           attribution={MAP_TILE_ATTRIBUTION}
           url={MAP_TILE_URL}
->>>>>>> 4ee86bc252e376d71094589ef2683c021bac92a7
         />
         <ViewportTracker onBoundsChange={handleBoundsChange} />
         {focusLocation && <FocusMap lat={focusLocation.lat} lng={focusLocation.lng} zoom={focusLocation.zoom} />}

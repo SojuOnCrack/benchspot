@@ -16,22 +16,14 @@ export default function TopHeader() {
   const debouncedQuery = useDebounce(query, 450)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-<<<<<<< HEAD
   const urlQuery = searchParams.get('q') ?? ''
+  const pushedQuery = useRef(urlQuery)
 
   useEffect(() => {
-    setQuery(urlQuery)
-  }, [urlQuery])
-=======
-  const pushedQuery = useRef(searchParams.get('q') ?? '')
-
-  useEffect(() => {
-    const urlQuery = searchParams.get('q') ?? ''
     if (urlQuery === pushedQuery.current) return
     pushedQuery.current = urlQuery
     setQuery(urlQuery)
-  }, [searchParams])
->>>>>>> a4da0105706eb3aa3b0a7e27e0158bb9469657c9
+  }, [urlQuery])
 
   useEffect(() => {
     const nextQuery = debouncedQuery.trim()
@@ -105,15 +97,7 @@ export default function TopHeader() {
                 aria-expanded={menuOpen}
                 className="flex items-center gap-1 rounded-full pr-1 transition hover:bg-forest-50 dark:hover:bg-white/10"
               >
-<<<<<<< HEAD
-                <img
-                  src={profile?.avatar_url ?? `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#3a6f3a"/><text x="32" y="40" text-anchor="middle" font-family="sans-serif" font-size="26" fill="white">${(profile?.display_name || profile?.username || 'B').slice(0, 1).toUpperCase()}</text></svg>`)}`}
-                  alt=""
-                  className="h-8 w-8 rounded-full border border-forest-100 bg-white object-cover dark:border-white/10"
-                />
-=======
                 <Avatar profile={profile} userId={user.id} />
->>>>>>> 4ee86bc252e376d71094589ef2683c021bac92a7
                 <ChevronDown size={14} className={`text-stone-500 transition-transform dark:text-stone-300 ${menuOpen ? 'rotate-180' : ''}`} />
               </button>
 
@@ -145,15 +129,7 @@ export default function TopHeader() {
             </div>
           ) : (
             <Link to="/profil" className="flex items-center gap-2">
-<<<<<<< HEAD
-              <img
-                src={profile?.avatar_url ?? `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#3a6f3a"/><text x="32" y="40" text-anchor="middle" font-family="sans-serif" font-size="26" fill="white">${(profile?.display_name || profile?.username || 'B').slice(0, 1).toUpperCase()}</text></svg>`)}`}
-                alt=""
-                className="h-8 w-8 rounded-full border border-forest-100 bg-white object-cover dark:border-white/10"
-              />
-=======
               <Avatar profile={profile} userId={user.id} />
->>>>>>> 4ee86bc252e376d71094589ef2683c021bac92a7
             </Link>
           )
         ) : (
