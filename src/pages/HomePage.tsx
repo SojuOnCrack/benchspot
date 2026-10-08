@@ -12,7 +12,8 @@ import type { BenchFilters } from '@/types/database'
 export default function HomePage() {
   const [filters, setFilters] = useState<BenchFilters>({})
   const [searchParams] = useSearchParams()
-  const geo = useGeolocation(false, true)
+  // Standort erst nach Klick auf den Standort-Button abfragen.
+  const geo = useGeolocation(false, false)
 
   const userLocation = geo.lat && geo.lng ? { lat: geo.lat, lng: geo.lng } : null
   const searchText = (searchParams.get('q') ?? '').trim()

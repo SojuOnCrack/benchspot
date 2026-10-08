@@ -97,7 +97,7 @@ export default function TopHeader() {
                 className="flex items-center gap-1 rounded-full pr-1 transition hover:bg-forest-50 dark:hover:bg-white/10"
               >
                 <img
-                  src={profile?.avatar_url ?? `https://api.dicebear.com/9.x/notionists/svg?seed=${user.id}`}
+                  src={profile?.avatar_url ?? `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#3a6f3a"/><text x="32" y="40" text-anchor="middle" font-family="sans-serif" font-size="26" fill="white">${(profile?.display_name || profile?.username || 'B').slice(0, 1).toUpperCase()}</text></svg>`)}`}
                   alt=""
                   className="h-8 w-8 rounded-full border border-forest-100 bg-white object-cover dark:border-white/10"
                 />
@@ -133,7 +133,7 @@ export default function TopHeader() {
           ) : (
             <Link to="/profil" className="flex items-center gap-2">
               <img
-                src={profile?.avatar_url ?? `https://api.dicebear.com/9.x/notionists/svg?seed=${user.id}`}
+                src={profile?.avatar_url ?? `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#3a6f3a"/><text x="32" y="40" text-anchor="middle" font-family="sans-serif" font-size="26" fill="white">${(profile?.display_name || profile?.username || 'B').slice(0, 1).toUpperCase()}</text></svg>`)}`}
                 alt=""
                 className="h-8 w-8 rounded-full border border-forest-100 bg-white object-cover dark:border-white/10"
               />

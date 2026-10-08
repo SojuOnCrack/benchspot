@@ -41,7 +41,7 @@ export default function LocationPicker({ lat, lng, onChange }: LocationPickerPro
   return (
     <div className="h-56 overflow-hidden rounded-2xl border border-forest-100">
       <MapContainer center={[lat, lng]} zoom={16} className="h-full w-full" scrollWheelZoom={false}>
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <TileLayer url={import.meta.env.VITE_MAPTILER_KEY ? `https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=${import.meta.env.VITE_MAPTILER_KEY}` : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'} />
         <ClickHandler onChange={onChange} />
         <RecenterMap lat={lat} lng={lng} />
         <Marker

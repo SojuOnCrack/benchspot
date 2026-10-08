@@ -48,6 +48,7 @@ export default function AddBenchPage() {
   const [photos, setPhotos] = useState<File[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
   const [positionSource, setPositionSource] = useState<'pending' | 'geo' | 'manual'>('pending')
 
   const { register, handleSubmit, control, watch, setValue, formState } = useForm<BenchFormValues>({
@@ -105,7 +106,7 @@ export default function AddBenchPage() {
         await uploadBenchPhotos(bench.id, user.id, photos)
       } catch {
         // Bank existiert bereits – nicht erneut anlegen, Nutzer landet auf der Detailseite.
-        window.alert('Die Bank wurde gespeichert, aber die Fotos konnten nicht hochgeladen werden.')
+        setNotice('Die Bank wurde gespeichert, aber die Fotos konnten nicht hochgeladen werden.')
       }
       navigate(`/bank/${bench.id}`)
     } catch (err) {
@@ -230,6 +231,7 @@ export default function AddBenchPage() {
         <p className="mt-4 text-sm text-red-500">Bitte prüfe die markierten Felder (Titel, Position, Sitzplätze).</p>
       )}
       {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
+      {notice && <p role="status" className="mt-4 text-sm text-amber-700 dark:text-amber-300">{notice}</p>}
 
       <button
         type="submit"

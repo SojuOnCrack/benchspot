@@ -9,6 +9,7 @@ interface PhotoUploaderProps {
 
 const MAX_DIMENSION = 2000
 const JPEG_QUALITY = 0.82
+const MAX_FILE_SIZE = 8 * 1024 * 1024
 
 async function compressImage(file: File): Promise<File> {
   if (!file.type.startsWith('image/')) return file
@@ -46,7 +47,9 @@ export default function PhotoUploader({ files, onChange, max = 8 }: PhotoUploade
       if (!incoming) return
       setBusy(true)
       const remaining = max - files.length
-      const selected = Array.from(incoming).slice(0, remaining)
+      const selected = Array.from(incoming)
+        .filter((file) => file.type.startsWith('image/') && file.size <= MAX_FILE_SIZE)
+        .slice(0, remaining)
       const compressed = await Promise.all(selected.map(compressImage))
       onChange([...files, ...compressed])
       setBusy(false)

@@ -78,7 +78,7 @@ export type NewBenchInput = Omit<
 export async function createBench(input: NewBenchInput, ownerId: string) {
   const { data, error } = await supabase
     .from('benches')
-    .insert({ ...input, owner_id: ownerId })
+    .insert({ ...input, owner_id: ownerId, status: 'pending' })
     .select()
     .single()
 
@@ -119,6 +119,9 @@ export async function uploadBenchPhotos(benchId: string, userId: string, files: 
   const rows: Array<Pick<Photo, 'bench_id' | 'uploader_id' | 'storage_path' | 'sort_order'>> = []
 
   for (const [index, file] of files.entries()) {
+    if (!file.type.startsWith('image/') || file.size > 8 * 1024 * 1024) {
+      throw new Error('Fotos müssen Bilder sein und dürfen maximal 8 MB groß sein.')
+    }
     const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg'
     const path = `${benchId}/${crypto.randomUUID()}.${extension}`
     const { error } = await supabase.storage.from('bench-photos').upload(path, file, {
@@ -132,6 +135,13 @@ export async function uploadBenchPhotos(benchId: string, userId: string, files: 
   const { data, error } = await supabase.from('photos').insert(rows).select()
   if (error) throw error
   return data as Photo[]
+}
+
+export async function deleteBenchPhoto(photo: Photo) {
+  const { error: storageError } = await supabase.storage.from('bench-photos').remove([photo.storage_path])
+  if (storageError) throw storageError
+  const { error } = await supabase.from('photos').delete().eq('id', photo.id)
+  if (error) throw error
 }
 
 export async function fetchBenchPhotos(benchId: string) {
@@ -177,22 +187,45 @@ export async function fetchBenchComments(benchId: string) {
     .from('comments')
     .select('*, profiles:user_id(username, display_name, avatar_url)')
     .eq('bench_id', benchId)
-    .is('parent_id', null)
     .order('created_at', { ascending: false })
 
   if (error) throw error
   return data as Comment[]
 }
 
-export async function addBenchComment(benchId: string, userId: string, body: string) {
+export async function addBenchComment(benchId: string, userId: string, body: string, parentId: string | null = null) {
   const { data, error } = await supabase
     .from('comments')
-    .insert({ bench_id: benchId, user_id: userId, body })
+    .insert({ bench_id: benchId, user_id: userId, body, parent_id: parentId })
     .select('*, profiles:user_id(username, display_name, avatar_url)')
     .single()
 
   if (error) throw error
   return data as Comment
+}
+
+export async function deleteBenchComment(id: string) {
+  const { error } = await supabase.from('comments').delete().eq('id', id)
+  if (error) throw error
+}
+
+export async function toggleCommentLike(userId: string, commentId: string, liked: boolean) {
+  const { error } = liked
+    ? await supabase.from('comment_likes').delete().eq('user_id', userId).eq('comment_id', commentId)
+    : await supabase.from('comment_likes').insert({ user_id: userId, comment_id: commentId })
+  if (error) throw error
+}
+
+export async function fetchLikedCommentIds(userId: string, commentIds: string[]) {
+  if (!commentIds.length) return []
+  const { data, error } = await supabase.from('comment_likes').select('comment_id').eq('user_id', userId).in('comment_id', commentIds)
+  if (error) throw error
+  return data.map((row) => row.comment_id as string)
+}
+
+export async function createReport(reporterId: string, targetType: Report['target_type'], targetId: string, reason: Report['reason'], details?: string) {
+  const { error } = await supabase.from('reports').insert({ reporter_id: reporterId, target_type: targetType, target_id: targetId, reason, details: details || null })
+  if (error) throw error
 }
 
 export async function fetchOpenReports() {

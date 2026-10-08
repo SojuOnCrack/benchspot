@@ -47,7 +47,18 @@ export default function DatenschutzPage() {
         </section>
 
         <section>
-          <h2 className="mb-1 font-semibold text-stone-800 dark:text-stone-100">4. Zwecke &amp; Rechtsgrundlage</h2>
+          <h2 className="mb-1 font-semibold text-stone-800 dark:text-stone-100">4. Karten, Navigation und externe Dienste</h2>
+          <p>
+            Für die Kartendarstellung werden Kartenkacheln von OpenStreetMap bzw. – falls konfiguriert – MapTiler geladen.
+            Dabei erhält der jeweilige Anbieter technisch bedingt eure IP-Adresse und die angefragten Kartenbereiche. Beim
+            Klick auf „Navigation starten“ wird Google Maps in einem neuen Tab geöffnet; dabei gelten dessen
+            Datenschutzbestimmungen. Ortsnamen werden über unseren Server bei Nominatim (OpenStreetMap) aufgelöst.
+            Profilbilder werden standardmäßig lokal als Initialen erzeugt; es werden keine Avatare von DiceBear geladen.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="mb-1 font-semibold text-stone-800 dark:text-stone-100">5. Zwecke &amp; Rechtsgrundlage</h2>
           <p>
             Verarbeitung zur Bereitstellung des Dienstes (Kontoerstellung, Anzeige/Verwaltung von Bank-Einträgen) auf
             Grundlage von Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung). [Falls Analytics/Newsletter genutzt wird:
@@ -56,7 +67,7 @@ export default function DatenschutzPage() {
         </section>
 
         <section>
-          <h2 className="mb-1 font-semibold text-stone-800 dark:text-stone-100">5. Speicherdauer</h2>
+          <h2 className="mb-1 font-semibold text-stone-800 dark:text-stone-100">6. Speicherdauer</h2>
           <p>
             Accountdaten und Inhalte werden gespeichert, bis ihr euren Account löscht bzw. den Inhalt entfernt.
             [Konkrete Löschfristen für Backups ergänzen, falls vorhanden.]
@@ -64,7 +75,7 @@ export default function DatenschutzPage() {
         </section>
 
         <section>
-          <h2 className="mb-1 font-semibold text-stone-800 dark:text-stone-100">6. Eure Rechte</h2>
+          <h2 className="mb-1 font-semibold text-stone-800 dark:text-stone-100">7. Eure Rechte</h2>
           <p>
             Ihr habt das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17),
             Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) sowie Widerspruch (Art. 21).
@@ -73,7 +84,7 @@ export default function DatenschutzPage() {
         </section>
 
         <section>
-          <h2 className="mb-1 font-semibold text-stone-800 dark:text-stone-100">7. Kontakt</h2>
+          <h2 className="mb-1 font-semibold text-stone-800 dark:text-stone-100">8. Kontakt</h2>
           <p>Für Anfragen zum Datenschutz: [kontakt@example.com]</p>
         </section>
       </div>

@@ -6,6 +6,10 @@ import App from './App'
 import { AuthProvider } from '@/hooks/useAuth'
 import './styles/index.css'
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => undefined))
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
