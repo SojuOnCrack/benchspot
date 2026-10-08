@@ -1,6 +1,9 @@
 import { supabase } from '@/lib/supabase'
 import type { Bench, BenchFilters, MapBounds, Photo, Rating, Comment, Report, Profile } from '@/types/database'
 
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024
+const ALLOWED_PHOTO_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
+
 export async function fetchBenchesInBounds(bounds: MapBounds, filters: BenchFilters = {}) {
   const { data, error } = await supabase.rpc('benches_in_bbox', {
     min_lat: bounds.minLat,
@@ -119,8 +122,13 @@ export async function uploadBenchPhotos(benchId: string, userId: string, files: 
   const rows: Array<Pick<Photo, 'bench_id' | 'uploader_id' | 'storage_path' | 'sort_order'>> = []
 
   for (const [index, file] of files.entries()) {
+<<<<<<< HEAD
     if (!file.type.startsWith('image/') || file.size > 8 * 1024 * 1024) {
       throw new Error('Fotos müssen Bilder sein und dürfen maximal 8 MB groß sein.')
+=======
+    if (!ALLOWED_PHOTO_TYPES.has(file.type) || file.size > MAX_PHOTO_BYTES) {
+      throw new Error('Nur JPG, PNG oder WebP bis 5 MB pro Datei.')
+>>>>>>> 4ee86bc252e376d71094589ef2683c021bac92a7
     }
     const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg'
     const path = `${benchId}/${crypto.randomUUID()}.${extension}`
@@ -138,8 +146,14 @@ export async function uploadBenchPhotos(benchId: string, userId: string, files: 
 }
 
 export async function deleteBenchPhoto(photo: Photo) {
+<<<<<<< HEAD
   const { error: storageError } = await supabase.storage.from('bench-photos').remove([photo.storage_path])
   if (storageError) throw storageError
+=======
+  const storage = await supabase.storage.from('bench-photos').remove([photo.storage_path])
+  if (storage.error) throw storage.error
+
+>>>>>>> 4ee86bc252e376d71094589ef2683c021bac92a7
   const { error } = await supabase.from('photos').delete().eq('id', photo.id)
   if (error) throw error
 }
@@ -209,6 +223,7 @@ export async function deleteBenchComment(id: string) {
   if (error) throw error
 }
 
+<<<<<<< HEAD
 export async function toggleCommentLike(userId: string, commentId: string, liked: boolean) {
   const { error } = liked
     ? await supabase.from('comment_likes').delete().eq('user_id', userId).eq('comment_id', commentId)
@@ -226,6 +241,29 @@ export async function fetchLikedCommentIds(userId: string, commentIds: string[])
 export async function createReport(reporterId: string, targetType: Report['target_type'], targetId: string, reason: Report['reason'], details?: string) {
   const { error } = await supabase.from('reports').insert({ reporter_id: reporterId, target_type: targetType, target_id: targetId, reason, details: details || null })
   if (error) throw error
+=======
+export async function createReport(
+  reporterId: string,
+  targetType: Report['target_type'],
+  targetId: string,
+  reason: Report['reason'],
+  details?: string
+) {
+  const { data, error } = await supabase
+    .from('reports')
+    .insert({
+      reporter_id: reporterId,
+      target_type: targetType,
+      target_id: targetId,
+      reason,
+      details: details?.trim() || null,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data as Report
+>>>>>>> 4ee86bc252e376d71094589ef2683c021bac92a7
 }
 
 export async function fetchOpenReports() {

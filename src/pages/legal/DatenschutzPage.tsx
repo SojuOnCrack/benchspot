@@ -33,6 +33,7 @@ export default function DatenschutzPage() {
             <li>Account: E-Mail-Adresse, Username, optionaler Anzeigename, optionale Bio, optionales Profilbild</li>
             <li>Inhalte: von euch erstellte Bank-Einträge (inkl. GPS-Koordinaten des Standorts), Fotos, Bewertungen, Kommentare</li>
             <li>Technisch: Login-Session (per Cookie/Local Storage von Supabase Auth verwaltet)</li>
+            <li>Standort: Browser-Geolocation nur nach Klick auf den Standort-Button; die Koordinaten werden fuer die Kartenansicht genutzt.</li>
           </ul>
         </section>
 
@@ -75,6 +76,20 @@ export default function DatenschutzPage() {
         </section>
 
         <section>
+<<<<<<< HEAD
+=======
+          <h2 className="mb-1 font-semibold text-stone-800 dark:text-stone-100">6. Karten und externe Links</h2>
+          <p>
+            Die Kartenansicht laedt Kartenkacheln von dem konfigurierten Tile-Anbieter (standardmaessig OpenStreetMap).
+            Dabei koennen IP-Adresse, Browserdaten und Kartenausschnitt an diesen Anbieter uebermittelt werden. Links
+            zur Navigation fuehren zu Google Maps; erst beim Anklicken gelten die Datenschutzbedingungen von Google.
+            Profil-Avatare werden ohne externen Avatar-Dienst lokal aus Initialen dargestellt, sofern kein eigenes
+            Profilbild gespeichert ist.
+          </p>
+        </section>
+
+        <section>
+>>>>>>> 4ee86bc252e376d71094589ef2683c021bac92a7
           <h2 className="mb-1 font-semibold text-stone-800 dark:text-stone-100">7. Eure Rechte</h2>
           <p>
             Ihr habt das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17),

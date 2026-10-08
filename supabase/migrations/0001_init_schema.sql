@@ -75,7 +75,7 @@ create table public.benches (
   avg_rating numeric(2,1) not null default 0,
   rating_count integer not null default 0,
   favorite_count integer not null default 0,
-  status text not null default 'published' check (status in ('published','pending','hidden','removed')),
+  status text not null default 'pending' check (status in ('published','pending','hidden','removed')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

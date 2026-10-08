@@ -4,6 +4,7 @@ import MarkerClusterGroup from 'react-leaflet-cluster'
 import L from 'leaflet'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useBenchesInBounds } from '@/hooks/useBenches'
+import { MAP_TILE_ATTRIBUTION, MAP_TILE_URL } from '@/lib/mapTiles'
 import type { Bench, BenchFilters, MapBounds } from '@/types/database'
 import { benchMarkerIcon, userLocationIcon } from './benchIcons'
 import BenchMarkerPopup from './BenchMarkerPopup'
@@ -112,8 +113,13 @@ export default function BenchMap({
         preferCanvas
       >
         <TileLayer
+<<<<<<< HEAD
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende'
           url={tileUrl}
+=======
+          attribution={MAP_TILE_ATTRIBUTION}
+          url={MAP_TILE_URL}
+>>>>>>> 4ee86bc252e376d71094589ef2683c021bac92a7
         />
         <ViewportTracker onBoundsChange={handleBoundsChange} />
         {focusLocation && <FocusMap lat={focusLocation.lat} lng={focusLocation.lng} zoom={focusLocation.zoom} />}
