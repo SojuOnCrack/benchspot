@@ -1,15 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Star, TreePine } from 'lucide-react'
+import { CATEGORY_LABEL } from '@/lib/benchLabels'
 import type { Bench } from '@/types/database'
-
-const CATEGORY_LABEL: Record<string, string> = {
-  standard: 'Standard',
-  panorama: 'Panorama',
-  waterfront: 'Am Wasser',
-  forest: 'Wald',
-  urban: 'Stadt',
-  picnic: 'Picknick',
-}
 
 export default function BenchMarkerPopup({ bench }: { bench: Bench }) {
   return (

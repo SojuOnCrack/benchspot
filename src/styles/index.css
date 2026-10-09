@@ -127,3 +127,66 @@ html.dark textarea::placeholder {
   color: white;
   font-weight: 600;
 }
+
+/* Cluster-Marker: rund, mit Rand und Schatten (Standard-CSS von markercluster ist nicht eingebunden) */
+.marker-cluster {
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+.marker-cluster div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin: 5px 0 0 5px;
+  border: 2px solid white;
+  border-radius: 999px;
+  font-size: 13px;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+.marker-cluster span {
+  line-height: 1;
+}
+.leaflet-cluster-anim .leaflet-marker-icon {
+  transition:
+    transform 0.3s ease-out,
+    opacity 0.3s ease-in;
+}
+
+/* Tastaturfokus sichtbar (Eingabefelder haben eigene Fokus-Rahmen) */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+[role='menuitem']:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-forest-500);
+  outline-offset: 2px;
+}
+main:focus-visible {
+  outline: none;
+}
+
+/* Kartensteuerung */
+.leaflet-top.leaflet-right .leaflet-control-zoom {
+  margin-top: 4.5rem;
+  margin-right: 1rem;
+}
+.leaflet-control-zoom a {
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+}
+@media (max-width: 767px) {
+  /* Am Handy zoomt man per Fingergeste; Attribution über dem Listen-Sheet halten. */
+  .leaflet-control-zoom {
+    display: none;
+  }
+  .leaflet-bottom {
+    bottom: 3.5rem;
+  }
+}
+.leaflet-popup-content a {
+  color: inherit;
+}

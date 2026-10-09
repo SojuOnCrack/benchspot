@@ -120,7 +120,13 @@ export default function BenchDetailPage() {
       <div className="relative h-64 bg-forest-100 dark:bg-stone-900">
         <Link
           to="/"
-          className="absolute left-4 top-4 z-10 rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100"
+          onClick={(event) => {
+            if ((window.history.state as { idx?: number } | null)?.idx) {
+              event.preventDefault()
+              navigate(-1)
+            }
+          }}
+          className="absolute left-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100"
           aria-label="Zurück"
         >
           <ArrowLeft size={18} />
@@ -131,18 +137,18 @@ export default function BenchDetailPage() {
             onClick={() => (user ? favoriteMutation.mutate() : navigate('/login', { state: { from: location } }))}
             disabled={favoriteMutation.isPending}
             aria-pressed={isFavorite}
-            className="rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur disabled:opacity-60 dark:bg-stone-900/95 dark:text-stone-100"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-stone-800 shadow-sm backdrop-blur disabled:opacity-60 dark:bg-stone-900/95 dark:text-stone-100"
             aria-label={isFavorite ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'}
           >
             <Heart size={18} className={isFavorite ? 'fill-red-500 text-red-500' : ''} />
           </button>
           {isOwner && (
-            <button type="button" onClick={() => { setEditTitle(bench.title); setEditDescription(bench.description ?? ''); setEditOpen(true) }} className="rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100" aria-label="Bank bearbeiten"><Pencil size={18} /></button>
+            <button type="button" onClick={() => { setEditTitle(bench.title); setEditDescription(bench.description ?? ''); setEditOpen(true) }} className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100" aria-label="Bank bearbeiten"><Pencil size={18} /></button>
           )}
           <button
             type="button"
             onClick={share}
-            className="rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100"
             aria-label="Teilen"
           >
             <Share2 size={18} />
