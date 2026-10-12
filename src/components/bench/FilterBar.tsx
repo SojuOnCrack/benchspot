@@ -1,4 +1,4 @@
-import { Accessibility, TreeDeciduous, Mountain, Dog, Baby, Table2, Image, Star } from 'lucide-react'
+import { Accessibility, TreeDeciduous, Mountain, Dog, Baby, Table2, Image, Star, X } from 'lucide-react'
 import FilterChip from './FilterChip'
 import type { BenchFilters } from '@/types/database'
 
@@ -22,9 +22,24 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
   const toggle = (key: keyof BenchFilters) => {
     onChange({ ...filters, [key]: !filters[key] })
   }
+  const activeCount = CHIPS.filter((chip) => Boolean(filters[chip.key])).length
 
   return (
-    <div className="pointer-events-auto flex gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none]">
+    <div
+      role="group"
+      aria-label="Filter"
+      className="pointer-events-auto flex gap-2 overflow-x-auto px-4 py-2.5 [scrollbar-width:none]"
+    >
+      {activeCount > 0 && (
+        <button
+          type="button"
+          onClick={() => onChange({})}
+          className="flex h-10 shrink-0 items-center gap-1.5 rounded-full bg-stone-800 px-3.5 text-sm font-medium text-white shadow-sm transition active:scale-[0.97] dark:bg-stone-100 dark:text-stone-900"
+        >
+          <X size={16} aria-hidden="true" />
+          Zurücksetzen ({activeCount})
+        </button>
+      )}
       {CHIPS.map((chip) => (
         <FilterChip
           key={chip.key}

@@ -9,6 +9,7 @@ import { setProfileBlocked, updateReportStatus, updateBenchStatusAdmin, deleteBe
 import { benchSchema, benchFormDefaults, type BenchFormValues } from '@/lib/schemas/benchSchema'
 import type { Bench } from '@/types/database'
 import LocationPicker from '@/components/bench/LocationPicker'
+import { toast } from '@/lib/toast'
 import PageSkeleton from '@/components/ui/PageSkeleton'
 
 const FIELD_CLASS = 'mt-1 w-full rounded-xl border border-forest-100 bg-white px-3.5 py-2.5 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-forest-400 dark:border-white/10 dark:bg-stone-900 dark:text-stone-100 dark:placeholder:text-stone-500'
@@ -33,22 +34,34 @@ export default function AdminPage() {
 
   const reportMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: 'resolved' | 'dismissed' }) => updateReportStatus(id, status),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-reports'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-reports'] })
+      toast.success('Meldung bearbeitet.')
+    },
   })
 
   const blockMutation = useMutation({
     mutationFn: ({ id, isBlocked }: { id: string; isBlocked: boolean }) => setProfileBlocked(id, isBlocked),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-profiles'] }),
+    onSuccess: (_data, { isBlocked }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-profiles'] })
+      toast.success(isBlocked ? 'Nutzer gesperrt.' : 'Nutzer entsperrt.')
+    },
   })
 
   const benchStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: Bench['status'] }) => updateBenchStatusAdmin(id, status),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-benches'] }),
+    onSuccess: (_data, { status }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-benches'] })
+      toast.success(`Status: ${BENCH_STATUS_LABEL[status]}.`)
+    },
   })
 
   const benchDeleteMutation = useMutation({
     mutationFn: (id: string) => deleteBenchAdmin(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-benches'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-benches'] })
+      toast.success('Bank gelöscht.')
+    },
   })
 
   const {
@@ -81,6 +94,7 @@ export default function AdminPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-benches'] })
       reset(benchFormDefaults)
       setShowAddBench(false)
+      toast.success('Bank hinzugefügt.')
     },
   })
 
@@ -225,9 +239,6 @@ export default function AdminPage() {
               <p className="mt-1 text-xs text-stone-500">{pickedLat.toFixed(5)}, {pickedLng.toFixed(5)}</p>
             </div>
 
-            {benchCreateMutation.isError && (
-              <p className="text-xs text-red-500">Fehler beim Speichern. Bitte erneut versuchen.</p>
-            )}
 
             <button
               type="submit"

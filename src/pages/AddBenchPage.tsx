@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { benchSchema, benchFormDefaults, type BenchFormValues } from '@/lib/schemas/benchSchema'
 import { createBench, uploadBenchPhotos } from '@/lib/api/benches'
+import { toast } from '@/lib/toast'
 import { useAuth } from '@/hooks/useAuthContext'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import LocationPicker from '@/components/bench/LocationPicker'
@@ -48,7 +49,6 @@ export default function AddBenchPage() {
   const [photos, setPhotos] = useState<File[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
   const [positionSource, setPositionSource] = useState<'pending' | 'geo' | 'manual'>('pending')
 
   const { register, handleSubmit, control, watch, setValue, formState } = useForm<BenchFormValues>({
@@ -102,12 +102,16 @@ export default function AddBenchPage() {
         },
         user.id
       )
+      let photoFailed = false
       try {
         await uploadBenchPhotos(bench.id, user.id, photos)
       } catch {
         // Bank existiert bereits – nicht erneut anlegen, Nutzer landet auf der Detailseite.
-        setNotice('Die Bank wurde gespeichert, aber die Fotos konnten nicht hochgeladen werden.')
+        photoFailed = true
       }
+      if (photoFailed) toast.error('Die Bank wurde gespeichert, aber die Fotos konnten nicht hochgeladen werden.')
+      else if (bench.status === 'pending') toast.success('Danke! Deine Bank erscheint nach einer kurzen Prüfung auf der Karte.')
+      else toast.success('Bank gespeichert.')
       navigate(`/bank/${bench.id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Speichern fehlgeschlagen')
@@ -231,7 +235,6 @@ export default function AddBenchPage() {
         <p className="mt-4 text-sm text-red-500">Bitte prüfe die markierten Felder (Titel, Position, Sitzplätze).</p>
       )}
       {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
-      {notice && <p role="status" className="mt-4 text-sm text-amber-700 dark:text-amber-300">{notice}</p>}
 
       <button
         type="submit"

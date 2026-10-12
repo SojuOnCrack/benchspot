@@ -5,6 +5,7 @@ import { ArrowLeft, Navigation, Star, Heart, Share2, Send, Flag, Pencil, Trash2,
 import { useAuth } from '@/hooks/useAuthContext'
 import { useBench, useBenchComments, useBenchPhotos, useBenchRatings } from '@/hooks/useBenches'
 import { addBenchComment, createReport, deleteBench, deleteBenchComment, deleteBenchPhoto, fetchFavoriteBenchIds, fetchLikedCommentIds, toggleCommentLike, toggleFavorite, updateBench, upsertBenchRating } from '@/lib/api/benches'
+import { toast } from '@/lib/toast'
 import PageSkeleton from '@/components/ui/PageSkeleton'
 import BenchAttributeGrid from '@/components/bench/BenchAttributeGrid'
 import { useDocumentMeta } from '@/hooks/useDocumentMeta'
@@ -20,12 +21,10 @@ export default function BenchDetailPage() {
   const { data: ratings = [] } = useBenchRatings(id)
   const { data: comments = [] } = useBenchComments(id)
   const [comment, setComment] = useState('')
-  const [shareHint, setShareHint] = useState<string | null>(null)
   const [activePhoto, setActivePhoto] = useState<number | null>(null)
   const [editOpen, setEditOpen] = useState(false)
   const [editTitle, setEditTitle] = useState('')
   const [editDescription, setEditDescription] = useState('')
-  const [message, setMessage] = useState<string | null>(null)
   const [replyTo, setReplyTo] = useState<string | null>(null)
   const { data: favoriteIds = [] } = useQuery({
     queryKey: ['favorite-ids', user?.id],
@@ -55,9 +54,10 @@ export default function BenchDetailPage() {
         return
       }
       await navigator.clipboard.writeText(url)
-      setShareHint('Link kopiert')
-    } catch {
-      setShareHint(null)
+      toast.success('Link kopiert.')
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return // Teilen-Dialog abgebrochen
+      toast.error('Der Link konnte nicht geteilt werden.')
     }
   }
 
@@ -84,19 +84,22 @@ export default function BenchDetailPage() {
 
   const editMutation = useMutation({
     mutationFn: () => updateBench(id as string, { title: editTitle.trim(), description: editDescription.trim() || null }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['bench', id] }); setEditOpen(false); setMessage('Änderungen gespeichert.') },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['bench', id] }); setEditOpen(false); toast.success('Änderungen gespeichert.') },
   })
   const deleteMutation = useMutation({
     mutationFn: () => deleteBench(id as string),
-    onSuccess: () => navigate('/'),
+    onSuccess: () => {
+      toast.success('Bank gelöscht.')
+      navigate('/')
+    },
   })
   const photoDeleteMutation = useMutation({
     mutationFn: deleteBenchPhoto,
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['bench-photos', id] }); setActivePhoto(null) },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['bench-photos', id] }); setActivePhoto(null); toast.success('Foto gelöscht.') },
   })
   const reportMutation = useMutation({
     mutationFn: () => createReport(user!.id, 'bench', id as string, 'inappropriate'),
-    onSuccess: () => setMessage('Danke, die Meldung wurde an die Moderation gesendet.'),
+    onSuccess: () => toast.success('Danke, die Meldung wurde an die Moderation gesendet.'),
   })
   const commentDeleteMutation = useMutation({ mutationFn: deleteBenchComment, onSuccess: () => queryClient.invalidateQueries({ queryKey: ['bench-comments', id] }) })
   const commentLikeMutation = useMutation({ mutationFn: ({ commentId, liked }: { commentId: string; liked: boolean }) => toggleCommentLike(user!.id, commentId, liked), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['bench-comments', id] }); queryClient.invalidateQueries({ queryKey: ['liked-comments', user?.id] }) } })
@@ -120,7 +123,13 @@ export default function BenchDetailPage() {
       <div className="relative h-64 bg-forest-100 dark:bg-stone-900">
         <Link
           to="/"
-          className="absolute left-4 top-4 z-10 rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100"
+          onClick={(event) => {
+            if ((window.history.state as { idx?: number } | null)?.idx) {
+              event.preventDefault()
+              navigate(-1)
+            }
+          }}
+          className="absolute left-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100"
           aria-label="Zurück"
         >
           <ArrowLeft size={18} />
@@ -131,25 +140,22 @@ export default function BenchDetailPage() {
             onClick={() => (user ? favoriteMutation.mutate() : navigate('/login', { state: { from: location } }))}
             disabled={favoriteMutation.isPending}
             aria-pressed={isFavorite}
-            className="rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur disabled:opacity-60 dark:bg-stone-900/95 dark:text-stone-100"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-stone-800 shadow-sm backdrop-blur disabled:opacity-60 dark:bg-stone-900/95 dark:text-stone-100"
             aria-label={isFavorite ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'}
           >
             <Heart size={18} className={isFavorite ? 'fill-red-500 text-red-500' : ''} />
           </button>
           {isOwner && (
-            <button type="button" onClick={() => { setEditTitle(bench.title); setEditDescription(bench.description ?? ''); setEditOpen(true) }} className="rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100" aria-label="Bank bearbeiten"><Pencil size={18} /></button>
+            <button type="button" onClick={() => { setEditTitle(bench.title); setEditDescription(bench.description ?? ''); setEditOpen(true) }} className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100" aria-label="Bank bearbeiten"><Pencil size={18} /></button>
           )}
           <button
             type="button"
             onClick={share}
-            className="rounded-full bg-white/95 p-2 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-stone-800 shadow-sm backdrop-blur dark:bg-stone-900/95 dark:text-stone-100"
             aria-label="Teilen"
           >
             <Share2 size={18} />
           </button>
-          {shareHint && (
-            <span role="status" className="self-center rounded-full bg-white/95 px-2.5 py-1 text-xs text-stone-800 shadow-sm dark:bg-stone-900/95 dark:text-stone-100">{shareHint}</span>
-          )}
         </div>
         {photos.length > 0 ? (
           <div className="flex h-full snap-x overflow-x-auto">
@@ -177,8 +183,6 @@ export default function BenchDetailPage() {
         </div>
 
         {bench.description && <p className="text-sm leading-relaxed text-stone-700 dark:text-stone-300">{bench.description}</p>}
-
-        {message && <p role="status" className="rounded-xl bg-forest-50 p-3 text-sm text-forest-800 dark:bg-forest-900/30 dark:text-forest-100">{message}</p>}
 
         <a
           href={mapsUrl}

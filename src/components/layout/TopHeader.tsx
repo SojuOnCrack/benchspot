@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import { TreePine, Search, Moon, Sun, ShieldCheck, UserRound, ChevronDown } from 'lucide-react'
+import { TreePine, Search, Moon, Sun, ShieldCheck, UserRound, ChevronDown, X } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
 import { useAuth } from '@/hooks/useAuthContext'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -18,6 +18,7 @@ export default function TopHeader() {
   const menuRef = useRef<HTMLDivElement>(null)
   const urlQuery = searchParams.get('q') ?? ''
   const pushedQuery = useRef(urlQuery)
+  const listView = searchParams.get('ansicht')
 
   useEffect(() => {
     if (urlQuery === pushedQuery.current) return
@@ -34,8 +35,9 @@ export default function TopHeader() {
     pushedQuery.current = nextQuery
     const params = new URLSearchParams()
     if (nextQuery) params.set('q', nextQuery)
+    if (listView) params.set('ansicht', listView)
     navigate({ pathname: '/', search: params.toString() }, { replace: location.pathname === '/' })
-  }, [debouncedQuery, location.pathname, navigate, urlQuery])
+  }, [debouncedQuery, listView, location.pathname, navigate, urlQuery])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -51,6 +53,7 @@ export default function TopHeader() {
     pushedQuery.current = query.trim()
     const params = new URLSearchParams()
     if (query.trim()) params.set('q', query.trim())
+    if (listView) params.set('ansicht', listView)
     navigate({ pathname: '/', search: params.toString() })
   }
 
@@ -58,23 +61,37 @@ export default function TopHeader() {
 
   return (
     <header className="relative z-[1100] flex items-center justify-between gap-3 border-b border-forest-100 bg-white/90 px-4 py-3 text-stone-800 backdrop-blur-md dark:border-white/10 dark:bg-ink-900/90 dark:text-stone-100">
-      <Link to="/" className="flex items-center gap-2 font-semibold text-forest-700 dark:text-forest-200">
-        <TreePine size={22} className="shrink-0" />
+      <Link to="/" aria-label="BenchSpot – zur Startseite" className="flex h-10 items-center gap-2 font-semibold text-forest-700 dark:text-forest-200">
+        <TreePine size={24} className="shrink-0" aria-hidden="true" />
         <span className="hidden sm:inline">BenchSpot</span>
       </Link>
 
       <form
         onSubmit={submitSearch}
-        className="flex max-w-md flex-1 items-center gap-2 rounded-full border border-forest-100 bg-white px-4 py-2 text-sm text-stone-700 shadow-sm transition focus-within:border-forest-400 dark:border-white/10 dark:bg-stone-900 dark:text-stone-100"
+        role="search"
+        className="flex h-10 min-w-0 max-w-md flex-1 items-center gap-2 rounded-full border border-stone-200 bg-white px-4 text-sm text-stone-700 shadow-sm transition focus-within:border-forest-400 dark:border-white/10 dark:bg-stone-900 dark:text-stone-100"
       >
         <Search size={16} className="shrink-0 text-stone-500 dark:text-stone-300" />
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Ort, Stadt oder Eigenschaft suchen..."
+          placeholder="Ort oder Bank suchen…"
+          type="search"
+          enterKeyHint="search"
+          autoComplete="off"
           aria-label="Ort, Stadt oder Eigenschaft suchen"
           className="min-w-0 flex-1 bg-transparent text-sm text-stone-800 placeholder:text-stone-500 outline-none dark:text-stone-100 dark:placeholder:text-stone-400"
         />
+        {query && (
+          <button
+            type="button"
+            onClick={() => setQuery('')}
+            aria-label="Suche löschen"
+            className="-mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-stone-500 transition hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-white/10"
+          >
+            <X size={16} aria-hidden="true" />
+          </button>
+        )}
         {location.pathname !== '/' && <button className="sr-only">Suchen</button>}
       </form>
 
@@ -83,9 +100,9 @@ export default function TopHeader() {
           type="button"
           onClick={toggle}
           aria-label="Farbschema wechseln"
-          className="rounded-full p-2 text-stone-600 transition hover:bg-forest-50 dark:text-stone-200 dark:hover:bg-white/10"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-stone-600 transition hover:bg-forest-50 dark:text-stone-200 dark:hover:bg-white/10"
         >
-          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          {theme === 'dark' ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
         </button>
         {user ? (
           isPrivileged ? (
@@ -95,6 +112,7 @@ export default function TopHeader() {
                 onClick={() => setMenuOpen((open) => !open)}
                 aria-haspopup="menu"
                 aria-expanded={menuOpen}
+                aria-label="Kontomenü"
                 className="flex items-center gap-1 rounded-full pr-1 transition hover:bg-forest-50 dark:hover:bg-white/10"
               >
                 <Avatar profile={profile} userId={user.id} />
@@ -128,7 +146,7 @@ export default function TopHeader() {
               )}
             </div>
           ) : (
-            <Link to="/profil" className="flex items-center gap-2">
+            <Link to="/profil" aria-label="Profil" className="flex items-center gap-2">
               <Avatar profile={profile} userId={user.id} />
             </Link>
           )

@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { LogOut, TreeDeciduous, Star, Award, Save } from 'lucide-react'
+import { toast } from '@/lib/toast'
 import { useAuth } from '@/hooks/useAuthContext'
 import { Link, useNavigate } from 'react-router-dom'
 import Avatar from '@/components/ui/Avatar'
@@ -29,7 +30,6 @@ export default function ProfilePage() {
   const [displayName, setDisplayName] = useState('')
   const [bio, setBio] = useState('')
   const [saving, setSaving] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -47,7 +47,6 @@ export default function ProfilePage() {
     event.preventDefault()
     setSaving(true)
     setError(null)
-    setMessage(null)
 
     const nextUsername = cleanUsername(username)
     if (nextUsername.length < 3) {
@@ -63,7 +62,7 @@ export default function ProfilePage() {
         bio: bio.trim() || null,
       })
       setUsername(nextUsername)
-      setMessage('Profil gespeichert.')
+      toast.success('Profil gespeichert.')
     } catch (err) {
       setError(profileErrorMessage(err))
     } finally {
@@ -122,7 +121,6 @@ export default function ProfilePage() {
         </div>
 
         {error && <p className="text-sm text-red-500">{error}</p>}
-        {message && <p className="text-sm text-forest-700 dark:text-forest-300">{message}</p>}
 
         <button
           type="submit"
